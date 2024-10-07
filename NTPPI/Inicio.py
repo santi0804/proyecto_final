@@ -5,27 +5,38 @@ st.set_page_config(layout="wide", page_title="Mapping Demo", page_icon="🌍")
 
 
 # Título y subtítulo
-st.title("Proyecto Integrador: [Nombre del Proyecto]")
-st.subheader("Un Viaje Creativo con [Nombre del Equipo]")
+st.title("CHRONOS MANAGER")
+st.subheader("GESTOR DE HORARIOS Y CONTROL DE ACCESOS")
+st.subheader("Brindamos soluciones a las gestiones administrativas con nuestro equipo Alpha Developers")
 
-# Imagen de fondo
-image = Image.open("./static/proyecto integrador.png") 
-st.image(image, width=700, use_column_width=True)  
+image_path = "./static/control acceso.png"  # Reemplaza con la ruta de la foto
+image = Image.open(image_path)  # Imagen de fondo
+horizontal_image = image.resize((1100, 350)) 
+st.image(horizontal_image) 
 
-# Integrantes
-st.header("Nuestro Equipo")
 
-col1, col2 = st.columns(2)
+st.header("Equipo Alpha Developers")   # Integrantes
+
+
+col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Nombre del Integrante 1]**")
-    st.write("[Rol en el proyecto]")
+    st.image("./static/santi.jpeg", width=200)  # Reemplaza con la ruta de la foto
+    st.write("**Santiago Tamayo**")
+    st.write("Desarrollador de Software")
+    
 
 with col2:
-    st.image("./static/user.png", width=200)  # Reemplaza con la ruta de la foto
-    st.write("**[Nombre del Integrante 2]**")
-    st.write("[Rol en el proyecto]")
+    st.image("./static/anderson.jpeg", width=170)  # Reemplaza con la ruta de la foto
+    st.write("**Anderson Alzate**")
+    st.write("Desarrollador de Software")
+    
+    
+with col3:
+    st.image("./static/jorge.jpeg", width=225)  # Reemplaza con la ruta de la foto
+    st.write("**Jorge Uribe**")
+    st.write("Desarrollador de Software")
+
 
 # Descripción del proyecto
 st.header("Sobre el Proyecto")

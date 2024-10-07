@@ -9,19 +9,13 @@ st.set_page_config(layout="wide")
 
 st.subheader("Proyecto Integrador")
 
-# Verificar si ya existe una instancia de la aplicación
-if not firebase_admin._apps:  
-    # Cargar las credenciales de Firebase desde los secretos de Streamlit
-    firebase_credentials = st.secrets["FIREBASE_CREDENTIALS"]  
-    # Convertir las credenciales a un diccionario Python
-    secrets_dict = firebase_credentials.to_dict()  
-    # Crear un objeto de credenciales usando el diccionario 
-    cred = credentials.Certificate(secrets_dict)  
-    # Inicializar la aplicación de Firebase con las credenciales
-    app = firebase_admin.initialize_app(cred)
 
-# Obtener el cliente de Firestore
-db = firestore.client()
+if not firebase_admin._apps:    # Verificar si ya existe una instancia de la aplicación
+    firebase_credentials = st.secrets["FIREBASE_CREDENTIALS"]  # Cargar las credenciales de Firebase desde los secretos de Streamlit
+    secrets_dict = firebase_credentials.to_dict()  # Convertir las credenciales a un diccionario Python
+    cred = credentials.Certificate(secrets_dict)   # Crear un objeto de credenciales usando el diccionario 
+    app = firebase_admin.initialize_app(cred)     # Inicializar la aplicación de Firebase con las credenciales
+db = firestore.client()   # Obtener el cliente de Firestore
 
 
 tad_descripcion, tab_Generador, tab_datos, tab_Análisis_Exploratorio, tab_Filtrado_Básico, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Generador de datos", "Datos", "Análisis Exploratorio", "Filtrado Básico", "Filtro Final Dinámico"])
