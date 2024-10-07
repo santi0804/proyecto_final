@@ -159,7 +159,7 @@ with tab_Generador:
 #----------------------------------------------------------
 with tab_datos:
     st.write('Esta función muestra datos de usuarios y productos almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
-    tab_user, tab_prodcutos = st.tabs(["Usuarios", "Prodcutos"])
+    tab_user, tab_productos = st.tabs(["Usuarios", "Productos"])
     with tab_user:        
         # Obtener datos de una colección de Firestore
         users = db.collection('usuarios').stream()
@@ -172,7 +172,7 @@ with tab_datos:
         df_users = df_users.reindex(columns=column_order)   
 
         st.dataframe(df_users)
-    with tab_prodcutos:       
+    with tab_productos:       
         # Obtener datos de una colección de Firestore
         users = db.collection('productos').stream()
         # Convertir datos a una lista de diccionarios
