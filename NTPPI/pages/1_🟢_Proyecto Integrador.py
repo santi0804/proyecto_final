@@ -27,24 +27,33 @@ with tad_descripcion:
 
     st.markdown('''   
 
-    ### Introducción
+    ## Introducción
 
-    -   ¿Qué es el proyecto?
-    -   ¿Cuál es el objetivo principal?
-    -   ¿Por qué es importante?
+    -   Que somos:
+        Chronos Manager es una solución integral diseñada para optimizar la gestión de horarios, el control de accesos, y el registro de horas extras y ausencias en entornos laborales y educativos. Utiliza tecnología avanzada para facilitar la planificación de horarios, garantizar la seguridad mediante control de accesos, y proporcionar un seguimiento efectivo de la asistencia y el tiempo trabajado. Esta plataforma centralizada permite a los administradores gestionar fácilmente la ocupación de espacios y supervisar el rendimiento de los empleados o estudiantes.
+    
+    -   Obejtivo:  Nuestro objetivo principal de Chronos Manager es proporcionar una herramienta eficiente y fácil de usar que permita a las organizaciones gestionar sus horarios y accesos de manera efectiva. Esto incluye la planificación de turnos, el registro de horas trabajadas, la gestión de ausencias y horas extras, y la implementación de controles de acceso seguros. Al hacerlo, se busca mejorar la productividad, optimizar los recursos, y asegurar un entorno de trabajo o aprendizaje organizado y seguro.
+    
+    -   Por qué es importante: La importancia de Chronos Manager radica en la creciente necesidad de las organizaciones de adaptarse a un entorno laboral y educativo dinámico y en constante cambio. Con la evolución de las prácticas laborales y las exigencias de seguridad, es fundamental contar con herramientas que faciliten la gestión eficiente del tiempo y los accesos. Este proyecto no solo ayuda a minimizar el riesgo de acceso no autorizado, sino que también proporciona a los líderes información valiosa sobre la asistencia y el rendimiento, lo que a su vez permite la toma de decisiones informadas y la implementación de mejoras continuas en la gestión de recursos humanos.
 
-    ### Desarrollo
+    ## Desarrollo
 
-    -   Explicación detallada del proyecto
-    -   Procedimiento utilizado
-    -   Resultados obtenidos
+    -   Explicación detallada del proyecto : Somos un software diseñado para gestionar controles de acceso, horas extras y ausencias en áreas administrativas de cualquier tipo de empresa. Facilita el monitoreo de asistencia, la validación de ausentismos y el seguimiento del tiempo extra trabajado, optimizando la eficiencia operativa.
+    
+    -   Procedimiento utilizado :  Para implementar Chronos Manager, se integran dispositivos de control de acceso con una plataforma central que registra horarios, ausencias y horas extras. Los datos se procesan y visualizan en un panel intuitivo para los administradores.
+        Tambien se pueden adaptar a sistemas operativos actualizados.
+    
+    -   Resultados obtenidos:  Los resultados incluyen una mejora significativa en la organización de los horarios, un aumento en la seguridad del acceso, y una reducción del tiempo dedicado a gestionar ausencias y horas extras, lo cual contribuye a una mayor productividad empresarial.
 
-    ### Conclusión
+    ## Conclusión
 
-    -   Resumen de los resultados
-    -   Logros alcanzados
-    -   Dificultades encontradas
-    -   Aportes personales
+    -   Resumen de los resultados:  Chronos Manager ha mejorado la gestión de horarios, el control de accesos y la validación de ausencias en áreas administrativas, optimizando el flujo de trabajo y garantizando la seguridad.
+    
+    -   Logros alcanzados: Se logró una administración centralizada y automatizada de los horarios, con un control preciso de accesos, horas extras y ausencias, reduciendo los errores y aumentando la productividad.
+    
+    -   Dificultades encontradas: Se presentaron desafíos en la integración con sistemas de control de acceso preexistentes y en la adaptación a las necesidades específicas de cada empresa.
+
+    -   Aportes personales: Nuestras contribuciónes se centran en el desarrollo de funcionalidades de validación de ausencias y en la personalización de la interfaz de usuario, buscando mejorar la experiencia del administrador en el manejo de datos y control de accesos.
     ''')
 
 #----------------------------------------------------------
