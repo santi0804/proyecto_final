@@ -59,13 +59,14 @@ with tad_descripcion:
 #----------------------------------------------------------
 #Generador de datos
 #----------------------------------------------------------
+
 with tab_Generador:
     st.write('Esta función Python genera datos ficticios de usuarios y productos y los carga en una base de datos Firestore, proporcionando una interfaz sencilla para controlar la cantidad de datos generados y visualizar los resultados.')
     # Inicializar Faker para Colombia
     fake = Faker('es_CO')
 
-    # Lista de ciudades colombianas
-    ciudades_colombianas = [
+    
+    ciudades_colombianas = [        # Lista de ciudades colombianas
         'Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 
         'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Ibagué',
         'Pasto', 'Manizales', 'Neiva', 'Villavicencio', 'Armenia'
@@ -160,27 +161,27 @@ with tab_Generador:
 with tab_datos:
     st.write('Esta función muestra datos de usuarios y productos almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
     tab_user, tab_productos = st.tabs(["Usuarios", "Productos"])
-    with tab_user:        
-        # Obtener datos de una colección de Firestore
-        users = db.collection('usuarios').stream()
-        # Convertir datos a una lista de diccionarios
-        users_data = [doc.to_dict() for doc in users]
+    with tab_user:       
+            
+        users = db.collection('usuarios').stream()   # Obtener datos de una colección de Firestore 
+        users_data = [doc.to_dict() for doc in users] # Convertir datos a una lista de diccionarios
+        
         # Crear DataFrame
-        df_users = pd.DataFrame(users_data)
-        # Reordenar las columnas
-        column_order = ['nombre', 'email', 'edad', 'ciudad']
+        
+        df_users = pd.DataFrame(users_data)  
+        column_order = ['nombre', 'email', 'edad', 'ciudad']  # Reordenar las columnas
         df_users = df_users.reindex(columns=column_order)   
 
         st.dataframe(df_users)
-    with tab_productos:       
-        # Obtener datos de una colección de Firestore
-        users = db.collection('productos').stream()
-        # Convertir datos a una lista de diccionarios
-        users_data = [doc.to_dict() for doc in users]
-        # Crear DataFrame
+    with tab_productos:    
+             
+        users = db.collection('productos').stream()  # Obtener datos de una colección de Firestore
+        users_data = [doc.to_dict() for doc in users]  # Convertir datos a una lista de diccionarios
+        
+         # Crear DataFrame
+         
         df_products = pd.DataFrame(users_data)
-         # Reordenar las columnas
-        column_order = ['nombre', 'categoria', 'precio', 'stock']
+        column_order = ['nombre', 'categoria', 'precio', 'stock']   # Reordenar las columnas
         df_products = df_products.reindex(columns=column_order)
         
         st.dataframe(df_products)
@@ -188,39 +189,57 @@ with tab_datos:
 #----------------------------------------------------------
 #Analítica 1
 #----------------------------------------------------------
-with tab_Análisis_Exploratorio:    
+with tab_Análisis_Exploratorio: 
+    
+    df_users.columns = df_users.columns.str.strip()  # Elimina espacios en blanco en los nombres de las columnas   
     st.title("Análisis Exploratorio")
-    st.markdown("""
-    * Muestra las primeras 5 filas del DataFrame.  **(df.head())**
-    * Muestra la cantidad de filas y columnas del DataFrame.  **(df.shape)**
-    * Muestra los tipos de datos de cada columna.  **(df.dtypes)**
-    * Identifica y muestra las columnas con valores nulos. **(df.isnull().sum())**
-    * Muestra un resumen estadístico de las columnas numéricas.  **(df.describe())**
-    * Muestra una tabla con la frecuencia de valores únicos para una columna categórica seleccionada. **(df['columna_categorica'].value_counts())** 
-    * Otra información importante  
-    """)
+    
+    st.markdown("Aqui las primeras 5 filas de los datos:")
+    st.write(df_users.head())   # Mostrar primeras 5 filas del DataFrame de usuarios
+    
+    st.markdown("Tipos de datos de las columnas de los datos de usuarios:")
+    st.write(df_users.dtypes)
+    
+    st.markdown("Columnas con valores nulos en los datos de usuarios:")
+    st.write(df_users.isnull().sum())
+    
+    st.markdown("Resumen Usuario:")   # Mostrar resumen estadístico de usuarios
+    st.dataframe(df_users.describe())
+    
+    st.markdown("Resumen productos:")  # Mostrar resumen estadístico de productos
+    st.dataframe(df_products.describe())
+    
+    st.markdown("Frecuencia de valores únicos:")
+    
+    columna_categorica = st.selectbox('Selecciona una columna', df_users.columns)  # Para seleccionar la columna categórica
+    
+     # Verificar si la columna seleccionada es de tipo categórico (object) o numérico
+     
+    if df_users[columna_categorica].dtype == 'object':
+        st.write(f"Frecuencia de valores únicos en la columna '{columna_categorica}':")
+        st.dataframe(df_users[columna_categorica].value_counts())
+    
+    elif df_users[columna_categorica].dtype in ['int64', 'float64']:  # Columnas numéricas como 'edad'
+        st.write(f"Frecuencia de valores en la columna '{columna_categorica}':")
+        st.dataframe(df_users[columna_categorica].value_counts())
+    
+    else:
+        st.write(f"La columna '{columna_categorica}' no es válida. Selecciona una columna válida.")
+        
+    
     
 #----------------------------------------------------------
 #Analítica 2
 #----------------------------------------------------------
 with tab_Filtrado_Básico:
         st.title("Filtro Básico")
-        st.markdown("""
-        * Permite filtrar datos usando condiciones simples. **(df[df['columna'] == 'valor'])**
-        * Permite seleccionar una columna y un valor para el filtro. **(st.selectbox, st.text_input)**
-        * Permite elegir un operador de comparación (igual, diferente, mayor que, menor que). **(st.radio)**
-        * Muestra los datos filtrados en una tabla. **(st.dataframe)** 
-        """)
+        st.markdown("Permite")
 
 #----------------------------------------------------------
 #Analítica 2
 #----------------------------------------------------------
 with tab_Filtro_Final_Dinámico:
         st.title("Filtro Final Dinámico")
-        st.markdown("""
-        * Muestra un resumen dinámico del DataFrame filtrado. 
-        * Incluye información como los criterios de filtrado aplicados, la tabla de datos filtrados, gráficos y estadísticas relevantes.
-        * Se actualiza automáticamente cada vez que se realiza un filtro en las pestañas anteriores. 
-        """)
+        st.markdown("Muestra")
 
 

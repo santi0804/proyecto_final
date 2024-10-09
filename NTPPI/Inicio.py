@@ -6,7 +6,7 @@ st.set_page_config(layout="wide", page_title="Mapping Demo", page_icon="🌍")
 
 # Título y subtítulo
 st.title("CHRONOS MANAGER")
-st.subheader("GESTOR DE HORARIOS Y CONTROL DE ACCESOS")
+st.subheader("##GESTOR DE HORARIOS Y CONTROL DE ACCESOS")
 st.subheader("Brindamos soluciones a las gestiones administrativas con nuestro equipo Alpha Developers")
 
 image_path = "./static/control acceso.png"  # Reemplaza con la ruta de la foto
