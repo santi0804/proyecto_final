@@ -227,14 +227,70 @@ with tab_Análisis_Exploratorio:
         st.write(f"La columna '{columna_categorica}' no es válida. Selecciona una columna válida.")
         
     
-    
 #----------------------------------------------------------
 #Analítica 2
 #----------------------------------------------------------
-with tab_Filtrado_Básico:
-        st.title("Filtro Básico")
-        st.markdown("Permite")
 
+with tab_Filtrado_Básico:
+    st.title("Filtro Básico")
+    st.markdown("Permite filtrar datos usando condiciones simples.")
+
+    # Selección de columna para filtrar
+    
+    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns)
+
+    if df_users[columna_seleccionada].dtype == 'object':  # Verificar el tipo de datos de la columna seleccionada
+        
+        valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}',   # Si la columna es categórica, mostrar los valores únicos para seleccionar uno
+                                    df_users[columna_seleccionada].astype(str).unique())
+    else:
+        min_valor = float(df_users[columna_seleccionada].min())  # Si la columna es numérica, permitir al usuario ingresar un valor numérico
+        max_valor = float(df_users[columna_seleccionada].max())
+        valor_filtro = st.number_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', 
+                                       min_value=min_valor, max_value=max_valor)
+
+    df_filtrado = df_users[df_users[columna_seleccionada] == valor_filtro]  # Aplicar el filtro a los datos
+
+    st.markdown(f"Datos filtrados por la columna '{columna_seleccionada}' con el valor '{valor_filtro}':")
+    st.dataframe(df_filtrado)  # Mostrar los resultados del filtro
+    
+    # Selección de columna y valor
+     
+    st.markdown(f'Selección de columna y valor')
+    
+    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro')
+    valor_filtro = st.text_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', key='valor_filtro')
+    
+    if valor_filtro:
+        filtro_resultado = df_users[df_users[columna_seleccionada] == valor_filtro]
+        st.write(filtro_resultado)
+    
+    
+    
+    # Operadores de comparación
+    st.markdown(f'Operadores de comparación')
+    
+    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_1')
+    
+    operador = st.radio('Selecciona un operador de comparación', ('Igual', 'Diferente', 'Mayor que', 'Menor que'), key='operador_comparacion_1')
+    
+    valor_filtro = st.text_input(f'Ingrese el valor para filtrar en la columna {columna_seleccionada}', key='valor_filtro_1')
+    
+    if valor_filtro:
+        if operador == 'Igual':
+            filtro_resultado = df_users[df_users[columna_seleccionada] == valor_filtro]
+        elif operador == 'Diferente':
+            filtro_resultado = df_users[df_users[columna_seleccionada] != valor_filtro]
+        elif operador == 'Mayor que':
+            filtro_resultado = df_users[df_users[columna_seleccionada] > valor_filtro]
+        elif operador == 'Menor que':
+            filtro_resultado = df_users[df_users[columna_seleccionada] < valor_filtro]
+        
+        st.write(filtro_resultado)  # Mostrar los datos filtrados en una tabla
+        
+         
+
+    
 #----------------------------------------------------------
 #Analítica 2
 #----------------------------------------------------------
