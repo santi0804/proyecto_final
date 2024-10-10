@@ -236,63 +236,41 @@ with tab_Filtrado_Básico:
     st.markdown("Permite filtrar datos usando condiciones simples.")
 
     # Selección de columna para filtrar
-    
-    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns)
+    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_unica')
 
-    if df_users[columna_seleccionada].dtype == 'object':  # Verificar el tipo de datos de la columna seleccionada
-        
-        valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}',   # Si la columna es categórica, mostrar los valores únicos para seleccionar uno
-                                    df_users[columna_seleccionada].astype(str).unique())
+    # Verificar si la columna es categórica u ofrece valores numéricos
+    if df_users[columna_seleccionada].dtype == 'object':
+        valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}', 
+                                    df_users[columna_seleccionada].astype(str).unique(), key='valor_filtro_unico')
     else:
-        min_valor = float(df_users[columna_seleccionada].min())  # Si la columna es numérica, permitir al usuario ingresar un valor numérico
+        min_valor = float(df_users[columna_seleccionada].min())
         max_valor = float(df_users[columna_seleccionada].max())
         valor_filtro = st.number_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', 
-                                       min_value=min_valor, max_value=max_valor)
+                                       min_value=min_valor, max_value=max_valor, key='valor_filtro_num')
 
-    df_filtrado = df_users[df_users[columna_seleccionada] == valor_filtro]  # Aplicar el filtro a los datos
+    # Selección de operador de comparación (Igual, Diferente, Mayor que, Menor que)
+    operador = st.radio('Selecciona un operador de comparación', ('Igual', 'Diferente', 'Mayor que', 'Menor que'), key='operador_comparacion')
 
+    # Aplicar el filtro según el tipo de columna y el operador seleccionado
+    if operador == 'Igual':
+        df_filtrado = df_users[df_users[columna_seleccionada] == valor_filtro]
+    elif operador == 'Diferente':
+        df_filtrado = df_users[df_users[columna_seleccionada] != valor_filtro]
+    elif operador == 'Mayor que' and df_users[columna_seleccionada].dtype != 'object':
+        df_filtrado = df_users[df_users[columna_seleccionada] > valor_filtro]
+    elif operador == 'Menor que' and df_users[columna_seleccionada].dtype != 'object':
+        df_filtrado = df_users[df_users[columna_seleccionada] < valor_filtro]
+    else:
+        st.write("El operador seleccionado no es válido para una columna categórica.")
+
+    # Mostrar los datos filtrados y la tabla
     st.markdown(f"Datos filtrados por la columna '{columna_seleccionada}' con el valor '{valor_filtro}':")
-    st.dataframe(df_filtrado)  # Mostrar los resultados del filtro
-    
-    # Selección de columna y valor
-     
-    st.markdown(f'Selección de columna y valor')
-    
-    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro')
-    valor_filtro = st.text_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', key='valor_filtro')
-    
-    if valor_filtro:
-        filtro_resultado = df_users[df_users[columna_seleccionada] == valor_filtro]
-        st.write(filtro_resultado)
-    
-    
-    
-    # Operadores de comparación
-    st.markdown(f'Operadores de comparación')
-    
-    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_1')
-    
-    operador = st.radio('Selecciona un operador de comparación', ('Igual', 'Diferente', 'Mayor que', 'Menor que'), key='operador_comparacion_1')
-    
-    valor_filtro = st.text_input(f'Ingrese el valor para filtrar en la columna {columna_seleccionada}', key='valor_filtro_1')
-    
-    if valor_filtro:
-        if operador == 'Igual':
-            filtro_resultado = df_users[df_users[columna_seleccionada] == valor_filtro]
-        elif operador == 'Diferente':
-            filtro_resultado = df_users[df_users[columna_seleccionada] != valor_filtro]
-        elif operador == 'Mayor que':
-            filtro_resultado = df_users[df_users[columna_seleccionada] > valor_filtro]
-        elif operador == 'Menor que':
-            filtro_resultado = df_users[df_users[columna_seleccionada] < valor_filtro]
-        
-        st.write(filtro_resultado)  # Mostrar los datos filtrados en una tabla
-        
-         
+    st.dataframe(df_filtrado)
+
 
     
 #----------------------------------------------------------
-#Analítica 2
+#Analítica 3
 #----------------------------------------------------------
 with tab_Filtro_Final_Dinámico:
         st.title("Filtro Final Dinámico")
