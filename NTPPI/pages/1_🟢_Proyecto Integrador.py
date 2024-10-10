@@ -2,6 +2,8 @@ import random
 from faker import Faker
 import streamlit as st 
 import pandas as pd  
+import seaborn as sns
+import matplotlib.pyplot as plt
 import firebase_admin  
 from firebase_admin import credentials, firestore  
 
@@ -194,22 +196,22 @@ with tab_Análisis_Exploratorio:
     df_users.columns = df_users.columns.str.strip()  # Elimina espacios en blanco en los nombres de las columnas   
     st.title("Análisis Exploratorio")
     
-    st.markdown("Aqui las primeras 5 filas de los datos:")
+    st.markdown("### Aqui las primeras 5 filas de los datos:")
     st.write(df_users.head())   # Mostrar primeras 5 filas del DataFrame de usuarios
     
-    st.markdown("Tipos de datos de las columnas de los datos de usuarios:")
+    st.markdown("### Tipos de datos de las columnas de los datos de usuarios:")
     st.write(df_users.dtypes)
     
-    st.markdown("Columnas con valores nulos en los datos de usuarios:")
+    st.markdown("### Columnas con valores nulos en los datos de usuarios:")
     st.write(df_users.isnull().sum())
     
-    st.markdown("Resumen Usuario:")   # Mostrar resumen estadístico de usuarios
+    st.markdown("### Resumen Usuario:")   # Mostrar resumen estadístico de usuarios
     st.dataframe(df_users.describe())
     
-    st.markdown("Resumen productos:")  # Mostrar resumen estadístico de productos
+    st.markdown("### Resumen productos:")  # Mostrar resumen estadístico de productos
     st.dataframe(df_products.describe())
     
-    st.markdown("Frecuencia de valores únicos:")
+    st.markdown("### Frecuencia de valores únicos:")
     
     columna_categorica = st.selectbox('Selecciona una columna', df_users.columns)  # Para seleccionar la columna categórica
     
@@ -233,7 +235,7 @@ with tab_Análisis_Exploratorio:
 
 with tab_Filtrado_Básico:
     st.title("Filtro Básico")
-    st.markdown("Permite filtrar datos usando condiciones simples.")
+    st.markdown(" ### Filtrar datos usando condiciones simples.")
 
     # Selección de columna para filtrar
     columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_unica')
@@ -265,7 +267,7 @@ with tab_Filtrado_Básico:
         st.write("El operador seleccionado no es válido para una columna categórica.")
 
     # Mostrar los datos filtrados y la tabla
-    st.markdown(f"Datos filtrados por la columna '{columna_seleccionada}' con el valor '{valor_filtro}':")
+    st.markdown(f"### Datos filtrados por la columna '{columna_seleccionada}' con el valor '{valor_filtro}':")
     st.dataframe(df_filtrado)
 
 
@@ -276,7 +278,7 @@ with tab_Filtrado_Básico:
 
 with tab_Filtro_Final_Dinámico:
     st.title("Filtro Final Dinámico")
-    st.markdown("Aplica filtros dinámicos y actualiza los resultados automáticamente.")
+    st.markdown("### Aplica filtros dinámicos y actualiza los resultados automáticamente.")
 
     # Selección de columna para filtrar
     columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_dinamico')
@@ -313,8 +315,16 @@ with tab_Filtro_Final_Dinámico:
     
     else:                                                 # Gráfico de barras para columna categórica
         st.markdown(f"### Gráfico de frecuencia de valores en la columna '{columna_seleccionada}':")
-        st.bar_chart(df_filtrado[columna_seleccionada].value_counts())
+        
+         # Crear gráfico con Seaborn y Matplotlib
+         
+        plt.figure(figsize=(10, 6))  # Ajustar el tamaño del gráfico
+        sns.barplot(x=df_filtrado[columna_seleccionada].value_counts().index,
+                y=df_filtrado[columna_seleccionada].value_counts().values,
+                color='lightgreen', width=0.1)  # Ancho ajustado y color
     
+         # Mostrar gráfico en Streamlit
+        st.pyplot(plt)
     
     st.markdown(f"### Total de registros filtrados: {len(df_filtrado)}") # Mostrar la cantidad de datos filtrados
 
