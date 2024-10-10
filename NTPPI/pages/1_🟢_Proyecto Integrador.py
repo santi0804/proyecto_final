@@ -241,12 +241,13 @@ with tab_Filtrado_Básico:
     # Verificar si la columna es categórica u ofrece valores numéricos
     if df_users[columna_seleccionada].dtype == 'object':
         valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}', 
-                                    df_users[columna_seleccionada].astype(str).unique(), key='valor_filtro_unico')
+        df_users[columna_seleccionada].astype(str).unique(), key='valor_filtro_unico')
+        
     else:
         min_valor = float(df_users[columna_seleccionada].min())
         max_valor = float(df_users[columna_seleccionada].max())
         valor_filtro = st.number_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', 
-                                       min_value=min_valor, max_value=max_valor, key='valor_filtro_num')
+        min_value=min_valor, max_value=max_valor, key='valor_filtro_num')
 
     # Selección de operador de comparación (Igual, Diferente, Mayor que, Menor que)
     operador = st.radio('Selecciona un operador de comparación', ('Igual', 'Diferente', 'Mayor que', 'Menor que'), key='operador_comparacion')
@@ -268,12 +269,52 @@ with tab_Filtrado_Básico:
     st.dataframe(df_filtrado)
 
 
-    
 #----------------------------------------------------------
 #Analítica 3
 #----------------------------------------------------------
-with tab_Filtro_Final_Dinámico:
-        st.title("Filtro Final Dinámico")
-        st.markdown("Muestra")
 
+
+with tab_Filtro_Final_Dinámico:
+    st.title("Filtro Final Dinámico")
+    st.markdown("Aplica filtros dinámicos y actualiza los resultados automáticamente.")
+
+    # Selección de columna para filtrar
+    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_dinamico')
+
+    # Verificar si la columna seleccionada es categórica o numérica
+    if df_users[columna_seleccionada].dtype == 'object':
+        valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}', 
+        df_users[columna_seleccionada].astype(str).unique(), key='valor_filtro_dinamico')
+    else:
+        min_valor = float(df_users[columna_seleccionada].min())
+        max_valor = float(df_users[columna_seleccionada].max())
+        valor_filtro = st.number_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', 
+        min_value=min_valor, max_value=max_valor, key='valor_filtro_num_dinamico')
+
+    # Aplicar el filtro
+    df_filtrado = df_users[df_users[columna_seleccionada] == valor_filtro]
+
+    # Mostrar los criterios de filtrado aplicados
+    st.markdown(f"**Criterios de filtrado aplicados**: Columna = '{columna_seleccionada}', Valor = '{valor_filtro}'")
+
+   
+    st.markdown("### Tabla de datos filtrados:")   # Mostrar la tabla de datos filtrados
+    st.dataframe(df_filtrado)
+
+    
+    st.markdown("### Resumen estadístico del DataFrame filtrado:") # Resumen estadístico dinámico del DataFrame filtrado
+    st.dataframe(df_filtrado.describe())
+
+
+    if df_users[columna_seleccionada].dtype != 'object':  # Gráfico de distribución si la columna es numérica
+        st.markdown("### Gráfico de distribución de la columna filtrada:")
+        st.bar_chart(df_filtrado[columna_seleccionada])
+
+    
+    else:                                                 # Gráfico de barras para columna categórica
+        st.markdown(f"### Gráfico de frecuencia de valores en la columna '{columna_seleccionada}':")
+        st.bar_chart(df_filtrado[columna_seleccionada].value_counts())
+    
+    
+    st.markdown(f"### Total de registros filtrados: {len(df_filtrado)}") # Mostrar la cantidad de datos filtrados
 
