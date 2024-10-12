@@ -49,7 +49,7 @@ with tad_descripcion:
 
     ## Conclusión
 
-    -   Resumen de los resultados:  Chronos Manager ha mejorado la gestión de horarios, el control de accesos y la validación de ausencias en áreas administrativas, optimizando el flujo de trabajo y garantizando la seguridad.
+    -   Resumen de los   Chronos Manager ha mejorado la gestión de horarios, el control de accesos y la validación de ausencias en áreas administrativas, optimizando el flujo de trabajo y garantizando la seguridad.
     
     -   Logros alcanzados: Se logró una administración centralizada y automatizada de los horarios, con un control preciso de accesos, horas extras y ausencias, reduciendo los errores y aumentando la productividad.
     
