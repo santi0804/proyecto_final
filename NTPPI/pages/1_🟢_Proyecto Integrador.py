@@ -318,10 +318,10 @@ with tab_Filtro_Final_Dinámico:
         
          # Crear gráfico con Seaborn y Matplotlib
          
-        plt.figure(figsize=(10, 6))  # Ajustar el tamaño del gráfico
+        plt.figure(figsize=(20, 4))  # Ajustar el tamaño del gráfico
         sns.barplot(x=df_filtrado[columna_seleccionada].value_counts().index,
                 y=df_filtrado[columna_seleccionada].value_counts().values,
-                color='lightgreen', width=0.1)  # Ancho ajustado y color
+                color='lightgreen', width=0.03)  # Ancho ajustado y color
     
          # Mostrar gráfico en Streamlit
         st.pyplot(plt)
