@@ -21,8 +21,17 @@ with tad_descripcion:
     ### Introducción
 
     -   ¿Qué es el proyecto?
+    
+    Chronos Manager es una aplicación para gestionar horarios de trabajo, controlar horas extras, ausencias y generar reportes de asistencia. Permite registrar entradas y salidas de empleados, calcular horas trabajadas y gestionar permisos.
+    
     -   ¿Cuál es el objetivo principal?
+    
+    El objetivo principal de Chronos Manager es facilitar el control y la gestión de horarios de trabajo, optimizando el seguimiento de asistencia, horas extras y ausencias en equipos laborales.
+    
     -   ¿Por qué es importante?
+    
+    Chronos Manager es importante porque ayuda a las empresas a gestionar de manera eficiente los horarios de trabajo, mejorando la precisión en el registro de asistencia, horas extras y ausencias. Esto optimiza la administración del tiempo, reduce errores, y facilita la generación de reportes, lo que mejora la productividad y la toma de decisiones.
+    
 
     ### Desarrollo
 
