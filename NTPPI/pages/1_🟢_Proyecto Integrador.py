@@ -5,7 +5,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import firebase_admin  
-from firebase_admin import credentials, firestore  
+from firebase_admin import credentials, firestore
+from datetime import datetime, timedelta
 
 st.set_page_config(layout="wide")
 
@@ -62,75 +63,41 @@ with tad_descripcion:
 #Generador de datos
 #----------------------------------------------------------
 
-with tab_Generador:
-    st.write('Esta función Python genera datos ficticios de usuarios y productos y los carga en una base de datos Firestore, proporcionando una interfaz sencilla para controlar la cantidad de datos generados y visualizar los resultados.')
-    # Inicializar Faker para Colombia
-    fake = Faker('es_CO')
-
-    
-    ciudades_colombianas = [        # Lista de ciudades colombianas
-        'Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 
-        'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Ibagué',
-        'Pasto', 'Manizales', 'Neiva', 'Villavicencio', 'Armenia'
+# Generador de registros de empleados
+def generate_employee_records(n):
+    empleados = [
+        {'EmpleadoID': '001', 'Nombre': 'Juan Pérez'},
+        {'EmpleadoID': '002', 'Nombre': 'Ana Gómez'},
+        {'EmpleadoID': '003', 'Nombre': 'Carlos Ruiz'},
+        {'EmpleadoID': '004', 'Nombre': 'Laura Díaz'},
+        {'EmpleadoID': '005', 'Nombre': 'Sofía Castillo'}
     ]
 
-    def generate_fake_users(n):
-        users = []
-        for _ in range(n):
-            user = {
-                'nombre': fake.name(),
-                'email': fake.email(),
-                'edad': random.randint(18, 80),
-                'ciudad': random.choice(ciudades_colombianas)
-            }
-            users.append(user)
-        return users
+    registros = []
+    fecha_inicio = datetime(2023, 1, 1)
+    for _ in range(n):
+        fecha = (fecha_inicio + timedelta(days=random.randint(0, 365))).strftime('%Y-%m-%d')
+        empleado = random.choice(empleados)
+        hora_entrada = random.choice(['08:00', '08:15', '09:00', ''])
+        hora_salida = '' if hora_entrada == '' else random.choice(['17:00', '17:30', '18:00', '18:30'])
+        horas_trabajadas = 0 if hora_entrada == '' else round(random.uniform(7, 9), 1)
+        horas_extras = max(0, horas_trabajadas - 8)
+        ausente = 'Sí' if hora_entrada == '' else 'No'
 
-    def generate_fake_products(n):
-        categories = {
-            'Electrónica': [
-                'Celular', 'Portátil', 'Tablet', 'Audífonos', 'Reloj inteligente', 
-                'Cámara digital', 'Parlante Bluetooth', 'Batería portátil', 
-                'Monitor', 'Teclado inalámbrico'
-            ],
-            'Ropa': [
-                'Camiseta', 'Jean', 'Vestido', 'Chaqueta', 'Zapatos', 
-                'Sudadera', 'Medias', 'Ruana', 'Gorra', 'Falda'
-            ],
-            'Hogar': [
-                'Lámpara', 'Cojín', 'Cortinas', 'Olla', 'Juego de sábanas', 
-                'Toallas', 'Espejo', 'Reloj de pared', 'Tapete', 'Florero'
-            ],
-            'Deportes': [
-                'Balón de fútbol', 'Raqueta de tenis', 'Pesas', 
-                'Colchoneta de yoga', 'Bicicleta', 'Tenis para correr', 
-                'Maletín deportivo', 'Termo', 'Guantes de boxeo', 'Lazo para saltar'
-            ]
-        }
+        registros.append([
+            fecha, empleado['EmpleadoID'], empleado['Nombre'], hora_entrada, hora_salida,
+            horas_trabajadas, horas_extras, ausente
+        ])
 
-        products = []
-        for _ in range(n):
-            category = random.choice(list(categories.keys()))
-            product_type = random.choice(categories[category])
-            
-            product = {
-                'nombre': product_type,
-                'precio': round(random.uniform(10000, 1000000), -3),  # Precios en pesos colombianos
-                'categoria': category,
-                'stock': random.randint(0, 100)
-            }
-            products.append(product)
-        return products
+    return pd.DataFrame(registros, columns=[
+        'Fecha', 'EmpleadoID', 'Nombre', 'HoraEntrada', 'HoraSalida',
+        'HorasTrabajadas', 'HorasExtras', 'Ausente'
+    ])
 
-    def delete_collection(collection_name):
-        docs = db.collection(collection_name).get()
-        for doc in docs:
-            doc.reference.delete()
-
-    def add_data_to_firestore(collection, data):
-        for item in data:
-            db.collection(collection).add(item)
+with tab_Generador:
+    st.write('Esta función Python genera datos ficticios de usuarios, productos y registros de acceso y horario.')
     
+    # Columnas para control de datos
     col1, col2 = st.columns(2)
 
     with col1:
@@ -157,36 +124,66 @@ with tab_Generador:
             st.success(f'{num_products} productos añadidos a Firestore')
             st.dataframe(pd.DataFrame(products))
 
+    # Generación de registros de acceso y horario
+    st.subheader('Registros de Empleados')
+    num_records = st.number_input('Número de registros a generar', min_value=1, max_value=5000, value=5000)
+    if st.button('Generar Registros de Empleados'):
+        df = generate_employee_records(num_records)
+        st.dataframe(df)
+        df.to_csv('registro_accesos.csv', index=False, encoding='utf-8')
+        st.success(f'Archivo CSV generado exitosamente con {num_records} registros.')
+
 #----------------------------------------------------------
 #Datos
 #----------------------------------------------------------
+
 with tab_datos:
-    st.write('Esta función muestra datos de usuarios y productos almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
-    tab_user, tab_productos = st.tabs(["Usuarios", "Productos"])
-    with tab_user:       
-            
-        users = db.collection('usuarios').stream()   # Obtener datos de una colección de Firestore 
-        users_data = [doc.to_dict() for doc in users] # Convertir datos a una lista de diccionarios
-        
-        # Crear DataFrame
-        
-        df_users = pd.DataFrame(users_data)  
+    st.write('Esta función muestra datos de usuarios, productos y registros de empleados almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
+
+    tab_user, tab_productos, tab_empleados = st.tabs(["Usuarios", "Productos", "Registros de Empleados"])
+
+    with tab_user:
+        # Obtener datos de la colección de usuarios en Firestore
+        users = db.collection('usuarios').stream()
+        users_data = [doc.to_dict() for doc in users]
+
+        # Crear DataFrame de usuarios
+        df_users = pd.DataFrame(users_data)
         column_order = ['nombre', 'email', 'edad', 'ciudad']  # Reordenar las columnas
-        df_users = df_users.reindex(columns=column_order)   
+        df_users = df_users.reindex(columns=column_order)
 
         st.dataframe(df_users)
-    with tab_productos:    
-             
-        users = db.collection('productos').stream()  # Obtener datos de una colección de Firestore
-        users_data = [doc.to_dict() for doc in users]  # Convertir datos a una lista de diccionarios
-        
-         # Crear DataFrame
-         
-        df_products = pd.DataFrame(users_data)
-        column_order = ['nombre', 'categoria', 'precio', 'stock']   # Reordenar las columnas
+
+    with tab_productos:
+        # Obtener datos de la colección de productos en Firestore
+        products = db.collection('productos').stream()
+        products_data = [doc.to_dict() for doc in products]
+
+        # Crear DataFrame de productos
+        df_products = pd.DataFrame(products_data)
+        column_order = ['nombre', 'categoria', 'precio', 'stock']  # Reordenar las columnas
         df_products = df_products.reindex(columns=column_order)
-        
+
         st.dataframe(df_products)
+
+    with tab_empleados:
+        # Mostrar DataFrame de registros de empleados generados
+        st.write('Visualización de registros de empleados generados.')
+        
+        # Asumiendo que el DataFrame `df` ya fue generado en la sección del generador de registros de empleados
+        st.dataframe(df)
+
+        # Filtrar registros por fecha
+        st.subheader('Filtrar registros por fecha')
+        fecha_inicio = st.date_input('Fecha de inicio', datetime(2023, 1, 1))
+        fecha_fin = st.date_input('Fecha de fin', datetime(2023, 12, 31))
+
+        # Convertir las fechas a formato de string para el filtrado
+        df['Fecha'] = pd.to_datetime(df['Fecha'])
+        df_filtrado = df[(df['Fecha'] >= pd.to_datetime(fecha_inicio)) & (df['Fecha'] <= pd.to_datetime(fecha_fin))]
+
+        st.dataframe(df_filtrado)
+
 
 #----------------------------------------------------------
 #Analítica 1
