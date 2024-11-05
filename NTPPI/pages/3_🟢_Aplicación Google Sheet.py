@@ -27,11 +27,13 @@ creds = service_account.Credentials.from_service_account_info(secrets_dict, scop
 service = build('sheets', 'v4', credentials=creds)
 sheet = service.spreadsheets()
 
+
 def read_sheet():
     result = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE1).execute()      
     values = result.get('values', [])
     df = pd.DataFrame(values)
     return df
+
 
 def update_sheet(df):
     body = {'values': df.values.tolist()}
@@ -39,6 +41,7 @@ def update_sheet(df):
         spreadsheetId=SPREADSHEET_ID, range=RANGE2,
         valueInputOption="USER_ENTERED", body=body).execute()
     return result
+
 
 # Botón para leer
 if st.button("Analizar datos de Google Sheet"):  

@@ -8,6 +8,7 @@ st.subheader("Análisis y Filtrado de Datos")
 # Cargar archivo CSV subido por el usuario
 uploaded_file = st.file_uploader("Sube un archivo CSV", type=["csv"])
 
+
 # Si el usuario ha subido un archivo, usa ese. Si no, usa el archivo por defecto.
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
