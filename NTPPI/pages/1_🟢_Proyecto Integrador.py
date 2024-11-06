@@ -21,10 +21,10 @@ if not firebase_admin._apps:    # Verificar si ya existe una instancia de la apl
 db = firestore.client()   # Obtener el cliente de Firestore
 
 
-tad_descripcion, tab_Generador, tab_datos, tab_Análisis_Exploratorio, tab_Filtrado_Básico, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Generador de datos", "Datos", "Análisis Exploratorio", "Filtrado Básico", "Filtro Final Dinámico"])
+tad_descripcion, tab_Generador, tab_datos, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Generador de datos", "Datos", "Análisis Exploratorio", "Filtro Final Dinámico"])
 
 #----------------------------------------------------------
-#Generador de datos
+#Descripciòn del sitio.
 #----------------------------------------------------------
 with tad_descripcion:      
 
@@ -66,11 +66,11 @@ with tad_descripcion:
 # Generador de registros de empleados
 def generate_employee_records(n):
     empleados = [
-        {'EmpleadoID': '001', 'Nombre': 'Juan Pérez'},
-        {'EmpleadoID': '002', 'Nombre': 'Ana Gómez'},
-        {'EmpleadoID': '003', 'Nombre': 'Carlos Ruiz'},
-        {'EmpleadoID': '004', 'Nombre': 'Laura Díaz'},
-        {'EmpleadoID': '005', 'Nombre': 'Sofía Castillo'}
+        {'ID': '001', 'Nombre': 'Juan Pérez'},
+        {'ID': '002', 'Nombre': 'Ana Gómez'},
+        {'ID': '003', 'Nombre': 'Carlos Ruiz'},
+        {'ID': '004', 'Nombre': 'Laura Díaz'},
+        {'ID': '005', 'Nombre': 'Sofía Castillo'}
     ]
 
     registros = []
@@ -85,49 +85,23 @@ def generate_employee_records(n):
         ausente = 'Sí' if hora_entrada == '' else 'No'
 
         registros.append([
-            fecha, empleado['EmpleadoID'], empleado['Nombre'], hora_entrada, hora_salida,
+            fecha, empleado['ID'], empleado['Nombre'], hora_entrada, hora_salida,
             horas_trabajadas, horas_extras, ausente
         ])
 
     return pd.DataFrame(registros, columns=[
-        'Fecha', 'EmpleadoID', 'Nombre', 'HoraEntrada', 'HoraSalida',
-        'HorasTrabajadas', 'HorasExtras', 'Ausente'
+        'Fecha', 'ID', 'Nombre', 'Hora Entrada', 'Hora Salida',
+        'Horas Trabajadas', 'Horas Extras', 'Ausente'
     ])
 
-with tab_Generador:
+
+with tab_Generador:    # Interfaz visual para el generador de registros
     st.write('Esta función Python genera datos ficticios de usuarios, productos y registros de acceso y horario.')
-    
-    # Columnas para control de datos
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader('Usuarios')
-        num_users = st.number_input('Número de usuarios a generar', min_value=1, max_value=100, value=10)
-        if st.button('Generar y Añadir Usuarios'):
-            with st.spinner('Eliminando usuarios existentes...'):
-                delete_collection('usuarios')
-            with st.spinner('Generando y añadiendo nuevos usuarios...'):
-                users = generate_fake_users(num_users)
-                add_data_to_firestore('usuarios', users)
-            st.success(f'{num_users} usuarios añadidos a Firestore')
-            st.dataframe(pd.DataFrame(users))
-
-    with col2:
-        st.subheader('Productos')
-        num_products = st.number_input('Número de productos a generar', min_value=1, max_value=100, value=10)
-        if st.button('Generar y Añadir Productos'):
-            with st.spinner('Eliminando productos existentes...'):
-                delete_collection('productos')
-            with st.spinner('Generando y añadiendo nuevos productos...'):
-                products = generate_fake_products(num_products)
-                add_data_to_firestore('productos', products)
-            st.success(f'{num_products} productos añadidos a Firestore')
-            st.dataframe(pd.DataFrame(products))
-
-    # Generación de registros de acceso y horario
     st.subheader('Registros de Empleados')
     num_records = st.number_input('Número de registros a generar', min_value=1, max_value=5000, value=5000)
+    
     if st.button('Generar Registros de Empleados'):
+        # Genera y muestra los registros
         df = generate_employee_records(num_records)
         st.dataframe(df)
         df.to_csv('registro_accesos.csv', index=False, encoding='utf-8')
@@ -138,190 +112,120 @@ with tab_Generador:
 #----------------------------------------------------------
 
 with tab_datos:
-    st.write('Esta función muestra datos de usuarios, productos y registros de empleados almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
+    st.write('Esta función muestra datos de control de acceso, productos y registros de empleados almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
 
-    tab_user, tab_productos, tab_empleados = st.tabs(["Usuarios", "Productos", "Registros de Empleados"])
+    tab_fecha, tab_empleado, tab_registros = st.tabs(["Fecha", "Empleados", "Registros de Empleados"])
 
-    with tab_user:
-        # Obtener datos de la colección de usuarios en Firestore
-        users = db.collection('usuarios').stream()
-        users_data = [doc.to_dict() for doc in users]
-
-        # Crear DataFrame de usuarios
-        df_users = pd.DataFrame(users_data)
-        column_order = ['nombre', 'email', 'edad', 'ciudad']  # Reordenar las columnas
-        df_users = df_users.reindex(columns=column_order)
-
-        st.dataframe(df_users)
-
-    with tab_productos:
-        # Obtener datos de la colección de productos en Firestore
-        products = db.collection('productos').stream()
-        products_data = [doc.to_dict() for doc in products]
-
-        # Crear DataFrame de productos
-        df_products = pd.DataFrame(products_data)
-        column_order = ['nombre', 'categoria', 'precio', 'stock']  # Reordenar las columnas
-        df_products = df_products.reindex(columns=column_order)
-
-        st.dataframe(df_products)
-
-    with tab_empleados:
-        # Mostrar DataFrame de registros de empleados generados
-        st.write('Visualización de registros de empleados generados.')
+if 'df' in locals():
+    with tab_fecha:
+        column_order = ['Fecha', 'ID', 'Hora Entrada', 'Hora Salida', 'Horas Trabajadas', 'Horas Extras']
+        df_tab_fecha = df.reindex(columns=column_order)  # Selecciona las columnas específicas para esta vista
+        st.dataframe(df_tab_fecha)
         
-        # Asumiendo que el DataFrame `df` ya fue generado en la sección del generador de registros de empleados
+    with tab_empleado:
+        column_order = ['ID', 'Nombre']
+        df_tab_empleado = df.reindex(columns=column_order)  # Selecciona solo las columnas específicas para esta vista
+        st.dataframe(df_tab_empleado)
+        
+    with tab_registros:
+        st.write('Visualización de registros de empleados generados.')
         st.dataframe(df)
-
-        # Filtrar registros por fecha
         st.subheader('Filtrar registros por fecha')
+        
         fecha_inicio = st.date_input('Fecha de inicio', datetime(2023, 1, 1))
         fecha_fin = st.date_input('Fecha de fin', datetime(2023, 12, 31))
 
-        # Convertir las fechas a formato de string para el filtrado
+        # Convertir las fechas a formato de datetime para el filtrado
         df['Fecha'] = pd.to_datetime(df['Fecha'])
         df_filtrado = df[(df['Fecha'] >= pd.to_datetime(fecha_inicio)) & (df['Fecha'] <= pd.to_datetime(fecha_fin))]
-
+        
         st.dataframe(df_filtrado)
 
+#-------------------------------------------------------------
+# Analítica 1
+#-------------------------------------------------------------
 
-#----------------------------------------------------------
-#Analítica 1
-#----------------------------------------------------------
-with tab_Análisis_Exploratorio: 
-    
-    df_users.columns = df_users.columns.str.strip()  # Elimina espacios en blanco en los nombres de las columnas   
-    st.title("Análisis Exploratorio")
-    
-    st.markdown("### Aqui las primeras 5 filas de los datos:")
-    st.write(df_users.head())   # Mostrar primeras 5 filas del DataFrame de usuarios
-    
-    st.markdown("### Tipos de datos de las columnas de los datos de usuarios:")
-    st.write(df_users.dtypes)
-    
-    st.markdown("### Columnas con valores nulos en los datos de usuarios:")
-    st.write(df_users.isnull().sum())
-    
-    st.markdown("### Resumen Usuario:")   # Mostrar resumen estadístico de usuarios
-    st.dataframe(df_users.describe())
-    
-    st.markdown("### Resumen productos:")  # Mostrar resumen estadístico de productos
-    st.dataframe(df_products.describe())
-    
-    st.markdown("### Frecuencia de valores únicos:")
-    
-    columna_categorica = st.selectbox('Selecciona una columna', df_users.columns)  # Para seleccionar la columna categórica
-    
-     # Verificar si la columna seleccionada es de tipo categórico (object) o numérico
-     
-    if df_users[columna_categorica].dtype == 'object':
-        st.write(f"Frecuencia de valores únicos en la columna '{columna_categorica}':")
-        st.dataframe(df_users[columna_categorica].value_counts())
-    
-    elif df_users[columna_categorica].dtype in ['int64', 'float64']:  # Columnas numéricas como 'edad'
-        st.write(f"Frecuencia de valores en la columna '{columna_categorica}':")
-        st.dataframe(df_users[columna_categorica].value_counts())
-    
-    else:
-        st.write(f"La columna '{columna_categorica}' no es válida. Selecciona una columna válida.")
+with tab_Análisis_Exploratorio:
+
+    if 'df' in locals():
+        df_users = df         
+        df_users.columns = df_users.columns.str.strip()  # Elimina espacios en blanco en los nombres de las columnas   
+        st.title("Análisis Exploratorio")
         
-    
-#----------------------------------------------------------
-#Analítica 2
-#----------------------------------------------------------
-
-with tab_Filtrado_Básico:
-    st.title("Filtro Básico")
-    st.markdown(" ### Filtrar datos usando condiciones simples.")
-
-    # Selección de columna para filtrar
-    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_unica')
-
-    # Verificar si la columna es categórica u ofrece valores numéricos
-    if df_users[columna_seleccionada].dtype == 'object':
-        valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}', 
-        df_users[columna_seleccionada].astype(str).unique(), key='valor_filtro_unico')
+        st.markdown("### Aquí las primeras 5 filas de los datos:")
+        st.write(df_users.head())  # Mostrar primeras 5 filas del DataFrame de usuarios
         
+        st.markdown("### Tipos de datos de las columnas de los datos de usuarios:")
+        st.write(df_users.dtypes)
+        
+        st.markdown("### Columnas con valores nulos en los datos de usuarios:")
+        st.write(df_users.isnull().sum())
+        
+        st.markdown("### Resumen Usuario:")  # Mostrar resumen estadístico de usuarios
+        st.dataframe(df_users.describe())
+        
+        columna_categorica = st.selectbox('Selecciona una columna', df_users.columns)  # Para seleccionar la columna categórica
+        
+        # Verificar si la columna seleccionada es de tipo categórico o numérico
+        
+        if df_users[columna_categorica].dtype == 'object':
+            st.write(f"Frecuencia de valores únicos en la columna '{columna_categorica}':")
+            st.dataframe(df_users[columna_categorica].value_counts())
+        
+        elif df_users[columna_categorica].dtype in ['int64', 'float64']:  # Columnas numéricas como 'edad'
+            st.write(f"Frecuencia de valores en la columna '{columna_categorica}':")
+            st.dataframe(df_users[columna_categorica].value_counts())
+        
+        else:
+            st.write(f"La columna '{columna_categorica}' no es válida. Selecciona una columna válida.")
     else:
-        min_valor = float(df_users[columna_seleccionada].min())
-        max_valor = float(df_users[columna_seleccionada].max())
-        valor_filtro = st.number_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', 
-        min_value=min_valor, max_value=max_valor, key='valor_filtro_num')
+        st.write("Aún no se han generado los datos de usuarios. Por favor, genera los datos primero en la sección 'Registros de Empleados'.")
 
-    # Selección de operador de comparación (Igual, Diferente, Mayor que, Menor que)
-    operador = st.radio('Selecciona un operador de comparación', ('Igual', 'Diferente', 'Mayor que', 'Menor que'), key='operador_comparacion')
-
-    # Aplicar el filtro según el tipo de columna y el operador seleccionado
-    if operador == 'Igual':
-        df_filtrado = df_users[df_users[columna_seleccionada] == valor_filtro]
-    elif operador == 'Diferente':
-        df_filtrado = df_users[df_users[columna_seleccionada] != valor_filtro]
-    elif operador == 'Mayor que' and df_users[columna_seleccionada].dtype != 'object':
-        df_filtrado = df_users[df_users[columna_seleccionada] > valor_filtro]
-    elif operador == 'Menor que' and df_users[columna_seleccionada].dtype != 'object':
-        df_filtrado = df_users[df_users[columna_seleccionada] < valor_filtro]
-    else:
-        st.write("El operador seleccionado no es válido para una columna categórica.")
-
-    # Mostrar los datos filtrados y la tabla
-    st.markdown(f"### Datos filtrados por la columna '{columna_seleccionada}' con el valor '{valor_filtro}':")
-    st.dataframe(df_filtrado)
-
-
-#----------------------------------------------------------
-#Analítica 3
-#----------------------------------------------------------
-
+#----------------------------------------------------------------------------
+# Analítica 2
+#--------------------------------------------------------------------------
 
 with tab_Filtro_Final_Dinámico:
     st.title("Filtro Final Dinámico")
     st.markdown("### Aplica filtros dinámicos y actualiza los resultados automáticamente.")
 
-    # Selección de columna para filtrar
-    columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_dinamico')
+    if 'df' in locals():
+        df_users = df  # Asignar el DataFrame generado a df_users
 
-    # Verificar si la columna seleccionada es categórica o numérica
-    if df_users[columna_seleccionada].dtype == 'object':
-        valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}', 
-        df_users[columna_seleccionada].astype(str).unique(), key='valor_filtro_dinamico')
-    else:
-        min_valor = float(df_users[columna_seleccionada].min())
-        max_valor = float(df_users[columna_seleccionada].max())
-        valor_filtro = st.number_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', 
-        min_value=min_valor, max_value=max_valor, key='valor_filtro_num_dinamico')
+        # Selección de columna para filtrar
+        columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_dinamico')
 
-    # Aplicar el filtro
-    df_filtrado = df_users[df_users[columna_seleccionada] == valor_filtro]
-
-    # Mostrar los criterios de filtrado aplicados
-    st.markdown(f"**Criterios de filtrado aplicados**: Columna = '{columna_seleccionada}', Valor = '{valor_filtro}'")
-
-   
-    st.markdown("### Tabla de datos filtrados:")   # Mostrar la tabla de datos filtrados
-    st.dataframe(df_filtrado)
-
-    
-    st.markdown("### Resumen estadístico del DataFrame filtrado:") # Resumen estadístico dinámico del DataFrame filtrado
-    st.dataframe(df_filtrado.describe())
-
-
-    if df_users[columna_seleccionada].dtype != 'object':  # Gráfico de distribución si la columna es numérica
-        st.markdown("### Gráfico de distribución de la columna filtrada:")
-        st.bar_chart(df_filtrado[columna_seleccionada])
-
-    
-    else:                                                 # Gráfico de barras para columna categórica
-        st.markdown(f"### Gráfico de frecuencia de valores en la columna '{columna_seleccionada}':")
+        # Verificar si la columna seleccionada es categórica, numérica o de fecha
+        if df_users[columna_seleccionada].dtype == 'object':
+            valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}', 
+                                        df_users[columna_seleccionada].astype(str).unique(), key='valor_filtro_dinamico')
         
-         # Crear gráfico con Seaborn y Matplotlib
-         
-        plt.figure(figsize=(20, 4))  # Ajustar el tamaño del gráfico
-        sns.barplot(x=df_filtrado[columna_seleccionada].value_counts().index,
-                y=df_filtrado[columna_seleccionada].value_counts().values,
-                color='lightgreen', width=0.03)  # Ancho ajustado y color
-    
-         # Mostrar gráfico en Streamlit
-        st.pyplot(plt)
-    
-    st.markdown(f"### Total de registros filtrados: {len(df_filtrado)}") # Mostrar la cantidad de datos filtrados
+        elif df_users[columna_seleccionada].dtype in ['int64', 'float64']:
+            # Filtro para columnas numéricas
+            min_valor = float(df_users[columna_seleccionada].min())
+            max_valor = float(df_users[columna_seleccionada].max())
+            valor_filtro = st.number_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', 
+                                           min_value=min_valor, max_value=max_valor, key='valor_filtro_num_dinamico')
+        
+        elif pd.api.types.is_datetime64_any_dtype(df_users[columna_seleccionada]):
+            # Filtro para columnas de tipo fecha
+            min_valor = df_users[columna_seleccionada].min()
+            max_valor = df_users[columna_seleccionada].max()
+            valor_filtro = st.date_input(f'Selecciona una fecha para filtrar en la columna {columna_seleccionada}', 
+                                         value=min_valor, min_value=min_valor, max_value=max_valor, key='valor_filtro_fecha_dinamico')
+        
+        else:
+            st.write("Tipo de columna no compatible con el filtro.")
+            valor_filtro = None
+
+        # Aplicar el filtro solo si `valor_filtro` tiene un valor válido
+        if valor_filtro is not None:
+            if isinstance(valor_filtro, pd.Timestamp):  # Convertir Timestamp a string o date si es necesario
+                valor_filtro = valor_filtro.date()
+            df_filtrado = df_users[df_users[columna_seleccionada] == valor_filtro]
+            st.markdown(f"**Criterios de filtrado aplicados**: Columna = '{columna_seleccionada}', Valor = '{valor_filtro}'")
+            st.markdown("### Tabla de datos filtrados:")
+            st.dataframe(df_filtrado)
+        else:
+            st.write("No se pudo aplicar el filtro.")
 

@@ -21,7 +21,7 @@ st.header("Equipo Alpha Developers")   # Integrantes
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.image("./static/santi.jpeg", width=200)  # Reemplaza con la ruta de la foto
+    st.image("./static/santi.jpeg", width=200)  # Reemplaza con la ruta de la foto..
     st.write("**Santiago Tamayo**")
     st.write("Desarrollador de Software")
     
