@@ -70,7 +70,13 @@ def generate_employee_records(n):
         {'ID': '002', 'Nombre': 'Ana Gómez'},
         {'ID': '003', 'Nombre': 'Carlos Ruiz'},
         {'ID': '004', 'Nombre': 'Laura Díaz'},
-        {'ID': '005', 'Nombre': 'Sofía Castillo'}
+        {'ID': '005', 'Nombre': 'Sofía Castillo'},
+        {'ID': '007', 'Nombre': 'Manuel Longas'},
+        {'ID': '008', 'Nombre': 'Dario Gomez'},
+        {'ID': '009', 'Nombre': 'Donal Trump'},
+        {'ID': '010', 'Nombre': 'James Rodriguez'},
+        {'ID': '011', 'Nombre': 'Esperanza Gomez'},
+        {'ID': '012', 'Nombre': 'Megan Fox'},
     ]
 
     registros = []
