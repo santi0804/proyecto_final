@@ -1,4 +1,4 @@
-import random
+import random 
 from faker import Faker
 import streamlit as st 
 import pandas as pd  
@@ -8,20 +8,20 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime, timedelta
 
+# Configurar la página
 st.set_page_config(layout="wide")
 
-st.subheader("Proyecto Integrador")
+# Inicialización de la aplicación y Firestore
+if not firebase_admin._apps:    
+    firebase_credentials = st.secrets["FIREBASE_CREDENTIALS"]
+    secrets_dict = firebase_credentials.to_dict()
+    cred = credentials.Certificate(secrets_dict)
+    app = firebase_admin.initialize_app(cred)
+db = firestore.client()
 
-
-if not firebase_admin._apps:    # Verificar si ya existe una instancia de la aplicación
-    firebase_credentials = st.secrets["FIREBASE_CREDENTIALS"]  # Cargar las credenciales de Firebase desde los secretos de Streamlit
-    secrets_dict = firebase_credentials.to_dict()  # Convertir las credenciales a un diccionario Python
-    cred = credentials.Certificate(secrets_dict)   # Crear un objeto de credenciales usando el diccionario 
-    app = firebase_admin.initialize_app(cred)     # Inicializar la aplicación de Firebase con las credenciales
-db = firestore.client()   # Obtener el cliente de Firestore
-
-
-tad_descripcion, tab_Generador, tab_datos, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(["Descripción", "Generador de datos", "Datos", "Análisis Exploratorio", "Filtro Final Dinámico"])
+tad_descripcion, tab_Generador, tab_datos, tab_Análisis_Exploratorio, tab_Filtro_Final_Dinámico = st.tabs(
+    ["Descripción", "Generador de datos", "Datos", "Análisis Exploratorio", "Filtro Final Dinámico"]
+)
 
 #----------------------------------------------------------
 #Descripciòn del sitio.
@@ -58,12 +58,11 @@ with tad_descripcion:
 
     -   Aportes personales: Nuestras contribuciónes se centran en el desarrollo de funcionalidades de validación de ausencias y en la personalización de la interfaz de usuario, buscando mejorar la experiencia del administrador en el manejo de datos y control de accesos.
     ''')
-
+    
 #----------------------------------------------------------
-#Generador de datos
+# Generación de registros de empleados
 #----------------------------------------------------------
 
-# Generador de registros de empleados
 def generate_employee_records(n):
     empleados = [
         {'ID': '001', 'Nombre': 'Juan Pérez'},
@@ -90,19 +89,20 @@ def generate_employee_records(n):
         horas_extras = max(0, horas_trabajadas - 8)
         ausente = 'Sí' if hora_entrada == '' else 'No'
 
-        registros.append([
-            fecha, empleado['ID'], empleado['Nombre'], hora_entrada, hora_salida,
-            horas_trabajadas, horas_extras, ausente
-        ])
+        registros.append([fecha, empleado['ID'], empleado['Nombre'], hora_entrada, hora_salida,
+                          horas_trabajadas, horas_extras, ausente])
 
     return pd.DataFrame(registros, columns=[
         'Fecha', 'ID', 'Nombre', 'Hora Entrada', 'Hora Salida',
         'Horas Trabajadas', 'Horas Extras', 'Ausente'
     ])
 
+#----------------------------------------------------------
+# Generador de datos
+#----------------------------------------------------------
 
-with tab_Generador:    # Interfaz visual para el generador de registros
-    st.write('Esta función Python genera datos ficticios de usuarios, productos y registros de acceso y horario.')
+with tab_Generador:
+    st.write('Esta función genera datos ficticios de empleados y sus registros de acceso.')
     st.subheader('Registros de Empleados')
     num_records = st.number_input('Número de registros a generar', min_value=1, max_value=5000, value=5000)
     
@@ -110,128 +110,102 @@ with tab_Generador:    # Interfaz visual para el generador de registros
         # Genera y muestra los registros
         df = generate_employee_records(num_records)
         st.dataframe(df)
+        st.session_state.df = df  # Guardar los datos en el estado de sesión
         df.to_csv('registro_accesos.csv', index=False, encoding='utf-8')
         st.success(f'Archivo CSV generado exitosamente con {num_records} registros.')
 
 #----------------------------------------------------------
-#Datos
+# Mostrar los datos y aplicar filtros
 #----------------------------------------------------------
 
 with tab_datos:
-    st.write('Esta función muestra datos de control de acceso, productos y registros de empleados almacenados en una base de datos Firestore, permitiendo una visualización organizada y fácil acceso a la información.')
+    st.write('Muestra los registros almacenados y permite aplicar filtros.')
 
-    tab_fecha, tab_empleado, tab_registros = st.tabs(["Fecha", "Empleados", "Registros de Empleados"])
+    if 'df' in st.session_state:  # Usar los datos guardados en el estado de sesión
+        df = st.session_state.df
+        
+        tab_fecha, tab_empleado, tab_extras, tab_registros = st.tabs(["Fecha", "Empleados", "Extras", "Registros de Empleados"])
+        
+        with tab_fecha:
+            st.write('Filtro de fechas y horas trabajadas')
+            column_order = ['Fecha', 'ID', 'Hora Entrada', 'Hora Salida', 'Horas Trabajadas', 'Horas Extras']
+            df_tab_fecha = df.reindex(columns=column_order)
+            st.dataframe(df_tab_fecha)
 
-if 'df' in locals():
-    with tab_fecha:
-        column_order = ['Fecha', 'ID', 'Hora Entrada', 'Hora Salida', 'Horas Trabajadas', 'Horas Extras']
-        df_tab_fecha = df.reindex(columns=column_order)  # Selecciona las columnas específicas para esta vista
-        st.dataframe(df_tab_fecha)
-        
-    with tab_empleado:
-        column_order = ['ID', 'Nombre']
-        df_tab_empleado = df.reindex(columns=column_order)  # Selecciona solo las columnas específicas para esta vista
-        st.dataframe(df_tab_empleado)
-        
-    with tab_registros:
-        st.write('Visualización de registros de empleados generados.')
-        st.dataframe(df)
-        st.subheader('Filtrar registros por fecha')
-        
-        fecha_inicio = st.date_input('Fecha de inicio', datetime(2023, 1, 1))
-        fecha_fin = st.date_input('Fecha de fin', datetime(2023, 12, 31))
+        with tab_empleado:
+            st.write('Filtro de ID y empleados')
+            column_order = ['ID', 'Nombre']
+            df_tab_empleado = df.reindex(columns=column_order)
+            st.dataframe(df_tab_empleado)
 
-        # Convertir las fechas a formato de datetime para el filtrado
-        df['Fecha'] = pd.to_datetime(df['Fecha'])
-        df_filtrado = df[(df['Fecha'] >= pd.to_datetime(fecha_inicio)) & (df['Fecha'] <= pd.to_datetime(fecha_fin))]
-        
-        st.dataframe(df_filtrado)
+        with tab_extras:
+            st.write('Filtro de ID, horas extras y ausencias')
+            column_order = ["ID", 'Horas Extras', 'Ausente']
+            df_tab_extras = df.reindex(columns=column_order)
+            st.dataframe(df_tab_extras)
 
-#-------------------------------------------------------------
-# Analítica 1
-#-------------------------------------------------------------
+        with tab_registros:
+            st.write('Todos los registros de empleados.')
+            st.dataframe(df)
+            st.subheader('Filtrar registros por fecha')
+
+            fecha_inicio = st.date_input('Fecha de inicio', datetime(2022, 1, 1))
+            fecha_fin = st.date_input('Fecha de fin', datetime(2024, 12, 31))
+
+            df['Fecha'] = pd.to_datetime(df['Fecha'])
+
+            if fecha_inicio <= fecha_fin:
+                df_filtrado = df[(df['Fecha'] >= pd.to_datetime(fecha_inicio)) & (df['Fecha'] <= pd.to_datetime(fecha_fin))]
+                st.dataframe(df_filtrado)
+            else:
+                st.error("La fecha de inicio debe ser anterior o igual a la fecha fin.")
+
+#----------------------------------------------------------
+# Análisis Exploratorio
+#----------------------------------------------------------
 
 with tab_Análisis_Exploratorio:
+    if 'df' in st.session_state:
+        df = st.session_state.df  # Usar los datos guardados en el estado de sesión
+        st.title("Análisis de horarios")
+        st.write(df.head())  # Mostrar las primeras 5 filas
 
-    if 'df' in locals():
-        df_users = df         
-        df_users.columns = df_users.columns.str.strip()  # Elimina espacios en blanco en los nombres de las columnas   
-        st.title("Análisis Exploratorio")
-        
-        st.markdown("### Aquí las primeras 5 filas de los datos:")
-        st.write(df_users.head())  # Mostrar primeras 5 filas del DataFrame de usuarios
-        
-        st.markdown("### Tipos de datos de las columnas de los datos de usuarios:")
-        st.write(df_users.dtypes)
-        
-        st.markdown("### Columnas con valores nulos en los datos de usuarios:")
-        st.write(df_users.isnull().sum())
-        
-        st.markdown("### Resumen Usuario:")  # Mostrar resumen estadístico de usuarios
-        st.dataframe(df_users.describe())
-        
-        columna_categorica = st.selectbox('Selecciona una columna', df_users.columns)  # Para seleccionar la columna categórica
-        
-        # Verificar si la columna seleccionada es de tipo categórico o numérico
-        
-        if df_users[columna_categorica].dtype == 'object':
-            st.write(f"Frecuencia de valores únicos en la columna '{columna_categorica}':")
-            st.dataframe(df_users[columna_categorica].value_counts())
-        
-        elif df_users[columna_categorica].dtype in ['int64', 'float64']:  # Columnas numéricas como 'edad'
-            st.write(f"Frecuencia de valores en la columna '{columna_categorica}':")
-            st.dataframe(df_users[columna_categorica].value_counts())
-        
-        else:
-            st.write(f"La columna '{columna_categorica}' no es válida. Selecciona una columna válida.")
-    else:
-        st.write("Aún no se han generado los datos de usuarios. Por favor, genera los datos primero en la sección 'Registros de Empleados'.")
+        st.markdown("### Análisis Estadístico:")
+        st.write(df.describe())
 
-#----------------------------------------------------------------------------
-# Analítica 2
-#--------------------------------------------------------------------------
+        st.markdown("### Gráficas:")
+
+        # Ajustar el tamaño de la figura para hacerla más pequeña
+        fig, ax = plt.subplots(figsize=(6, 3))  # Cambia el tamaño según tus necesidades
+        sns.histplot(df['Horas Trabajadas'], kde=True, ax=ax)
+
+        # Ajustar los elementos de la gráfica
+        ax.set_title("Distribución de Horas Trabajadas", fontsize=10)  # Título más pequeño
+        ax.set_xlabel("Horas Trabajadas", fontsize=8)  # Etiqueta X más pequeña
+        ax.set_ylabel("Frecuencia", fontsize=8)  # Etiqueta Y más pequeña
+
+        # Ajustar la visualización de los ejes para que no se solapen
+        plt.tight_layout()
+
+        # Mostrar la gráfica
+        st.pyplot(fig)
+
+#----------------------------------------------------------
+# Filtro Final Dinámico
+#----------------------------------------------------------
 
 with tab_Filtro_Final_Dinámico:
     st.title("Filtro Final Dinámico")
-    st.markdown("### Aplica filtros dinámicos y actualiza los resultados automáticamente.")
+    if 'df' in st.session_state:
+        df = st.session_state.df  # Usar los datos guardados en el estado de sesión
 
-    if 'df' in locals():
-        df_users = df  # Asignar el DataFrame generado a df_users
+        columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df.columns)
 
-        # Selección de columna para filtrar
-        columna_seleccionada = st.selectbox('Selecciona una columna para filtrar', df_users.columns, key='columna_filtro_dinamico')
-
-        # Verificar si la columna seleccionada es categórica, numérica o de fecha
-        if df_users[columna_seleccionada].dtype == 'object':
-            valor_filtro = st.selectbox(f'Selecciona un valor para filtrar en la columna {columna_seleccionada}', 
-                                        df_users[columna_seleccionada].astype(str).unique(), key='valor_filtro_dinamico')
-        
-        elif df_users[columna_seleccionada].dtype in ['int64', 'float64']:
-            # Filtro para columnas numéricas
-            min_valor = float(df_users[columna_seleccionada].min())
-            max_valor = float(df_users[columna_seleccionada].max())
-            valor_filtro = st.number_input(f'Ingresa un valor para filtrar en la columna {columna_seleccionada}', 
-                                           min_value=min_valor, max_value=max_valor, key='valor_filtro_num_dinamico')
-        
-        elif pd.api.types.is_datetime64_any_dtype(df_users[columna_seleccionada]):
-            # Filtro para columnas de tipo fecha
-            min_valor = df_users[columna_seleccionada].min()
-            max_valor = df_users[columna_seleccionada].max()
-            valor_filtro = st.date_input(f'Selecciona una fecha para filtrar en la columna {columna_seleccionada}', 
-                                         value=min_valor, min_value=min_valor, max_value=max_valor, key='valor_filtro_fecha_dinamico')
-        
-        else:
-            st.write("Tipo de columna no compatible con el filtro.")
-            valor_filtro = None
-
-        # Aplicar el filtro solo si `valor_filtro` tiene un valor válido
-        if valor_filtro is not None:
-            if isinstance(valor_filtro, pd.Timestamp):  # Convertir Timestamp a string o date si es necesario
-                valor_filtro = valor_filtro.date()
-            df_filtrado = df_users[df_users[columna_seleccionada] == valor_filtro]
-            st.markdown(f"**Criterios de filtrado aplicados**: Columna = '{columna_seleccionada}', Valor = '{valor_filtro}'")
-            st.markdown("### Tabla de datos filtrados:")
+        if df[columna_seleccionada].dtype == 'object':
+            valor_filtro = st.selectbox(f'Selecciona un valor para "{columna_seleccionada}"', df[columna_seleccionada].unique())
+            df_filtrado = df[df[columna_seleccionada] == valor_filtro]
             st.dataframe(df_filtrado)
         else:
-            st.write("No se pudo aplicar el filtro.")
-
+            valor_filtro = st.slider(f'Selecciona un rango para "{columna_seleccionada}"', min_value=int(df[columna_seleccionada].min()), max_value=int(df[columna_seleccionada].max()))
+            df_filtrado = df[df[columna_seleccionada] == valor_filtro]
+            st.dataframe(df_filtrado)
