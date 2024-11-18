@@ -1,71 +1,84 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-
-# Configura la interfaz de usuario con Streamlit
-st.title("Generador de Datos - CHRONOS MANAGER")
-st.sidebar.title("Opciones")
+import numpy as np
+import plotly.express as px
 
 # Generar datos simulados
-data = {
-    "Region": ["Norte", "Sur", "Este", "Oeste", "Centro"] * 100,
-    "Accesos": [500, 300, 450, 400, 550] * 100,
-    "Horas_Trabajadas": [40, 35, 45, 38, 42] * 100,
-    "Horas_Extras": [5, 2, 8, 4, 7] * 100,
-    "Ausencias": [1, 3, 2, 4, 0] * 100,
-}
-df = pd.DataFrame(data)
+ciudades = ["Bogotá", "Medellín", "Barranquilla", "Cali"]
+meses = pd.date_range(start="2024-01-01", end="2024-12-01", freq="MS")
+data = []
 
-# Selector para región
-region_seleccionada = st.sidebar.selectbox("Selecciona una región:", ["Todas"] + df["Region"].unique().tolist())
+for ciudad in ciudades:
+    for mes in meses:
+        horas_trabajadas = np.random.randint(35, 45)
+        horas_extras = np.random.randint(2, 10)
+        ausentismo = round(np.random.uniform(1, 10), 2)
+        productividad = round(horas_trabajadas / (horas_trabajadas + horas_extras) * 100, 2)
+        causa = np.random.choice(["Enfermedad", "Licencia", "Accidente"])
 
-# Filtrar datos por región seleccionada
-if region_seleccionada == "Todas":
-    datos_filtrados = df
-else:
-    datos_filtrados = df[df["Region"] == region_seleccionada]
+        data.append([ciudad, mes, horas_trabajadas, horas_extras, ausentismo, productividad, causa])
 
-# Resumen de estadísticas
-resumen = datos_filtrados.groupby("Region").agg(
-    Total_Accesos=("Accesos", "sum"),
-    Promedio_Horas_Trabajadas=("Horas_Trabajadas", "mean"),
-    Promedio_Horas_Extras=("Horas_Extras", "mean"),
-    Total_Ausencias=("Ausencias", "sum"),
+# Crear DataFrame
+df = pd.DataFrame(data, columns=["Ciudad", "Fecha", "Horas Trabajadas", "Horas Extras", "Tasa de Ausentismo (%)", "Productividad (%)", "Causa"])
+
+# Streamlit UI
+st.title("CHRONOS MANAGER - Dashboard")
+st.sidebar.header("Filtros")
+ciudad_seleccionada = st.sidebar.selectbox("Selecciona una ciudad:", ["Todas"] + ciudades)
+mes_seleccionado = st.sidebar.selectbox("Selecciona un mes:", ["Todos"] + meses.strftime("%Y-%m").tolist())
+
+# Filtrar datos
+df_filtrado = df.copy()
+if ciudad_seleccionada != "Todas":
+    df_filtrado = df_filtrado[df_filtrado["Ciudad"] == ciudad_seleccionada]
+if mes_seleccionado != "Todos":
+    df_filtrado = df_filtrado[df_filtrado["Fecha"].dt.strftime("%Y-%m") == mes_seleccionado]
+
+# Mostrar datos filtrados
+st.write("### Datos Filtrados")
+st.dataframe(df_filtrado)
+
+# Asegurar que las columnas sean numéricas para el cálculo de la media
+numerical_cols = df_filtrado.select_dtypes(include=["number"]).columns
+
+# Manejar valores nulos
+df_filtrado = df_filtrado.fillna(0)
+
+# Agrupar y calcular la media
+df_grouped = df_filtrado.groupby("Ciudad")[numerical_cols].mean().reset_index()
+
+# Gráficos interactivos
+st.write("### Gráficos Interactivos")
+fig = px.line(df_filtrado, x="Fecha", y="Tasa de Ausentismo (%)", color="Ciudad", title="Evolución del Ausentismo")
+st.plotly_chart(fig)
+
+fig_barras = px.bar(df_filtrado, x="Ciudad", y=["Horas Trabajadas", "Horas Extras"], title="Horas Trabajadas vs Extras", barmode="group")
+st.plotly_chart(fig_barras)
+
+# Gráfico de Productividad
+fig_radar = px.line_polar(
+    df_grouped, 
+    r="Productividad (%)", 
+    theta="Ciudad", 
+    line_close=True, 
+    title="Índice de Productividad por Ciudad"
+)
+st.plotly_chart(fig_radar)
+
+# Botón de exportar datos
+if st.button("Exportar datos"):
+    df_filtrado.to_csv("datos_chronos_manager.csv", index=False)
+    st.success("¡Datos exportados con éxito!")
+    
+    # Crear un gráfico de barras para comparar la productividad de las ciudades
+fig_productividad = px.bar(
+    df_grouped, 
+    x="Ciudad", 
+    y="Productividad (%)", 
+    title="Comparación de la Productividad por Ciudad", 
+    color="Ciudad",
+    labels={"Productividad (%)": "Productividad (%)", "Ciudad": "Ciudad"},
+    color_discrete_sequence=px.colors.qualitative.Set2
 )
 
-st.write(f"### Resumen de datos para: {region_seleccionada}")
-st.dataframe(resumen)
-
-# Crear gráficos
-st.write("### Visualización de datos")
-fig, axes = plt.subplots(2, 2, figsize=(12, 8))
-
-# Total de accesos
-resumen["Total_Accesos"].plot(kind="bar", color="skyblue", ax=axes[0, 0], title="Total de Accesos por Región")
-axes[0, 0].set_ylabel("Accesos")
-axes[0, 0].tick_params(axis="x", rotation=45)
-
-# Promedio de horas trabajadas
-resumen["Promedio_Horas_Trabajadas"].plot(kind="bar", color="lightgreen", ax=axes[0, 1], title="Promedio de Horas Trabajadas")
-axes[0, 1].set_ylabel("Horas")
-axes[0, 1].tick_params(axis="x", rotation=45)
-
-# Promedio de horas extras
-resumen["Promedio_Horas_Extras"].plot(kind="bar", color="orange", ax=axes[1, 0], title="Promedio de Horas Extras")
-axes[1, 0].set_ylabel("Horas Extras")
-axes[1, 0].tick_params(axis="x", rotation=45)
-
-# Total de ausencias
-resumen["Total_Ausencias"].plot(kind="bar", color="red", ax=axes[1, 1], title="Total de Ausencias")
-axes[1, 1].set_ylabel("Ausencias")
-axes[1, 1].tick_params(axis="x", rotation=45)
-
-# Ajustar diseño y mostrar
-plt.tight_layout()
-st.pyplot(fig)
-
-# Exportar resumen
-st.write("### Exportar Resumen")
-if st.button("Exportar a CSV"):
-    resumen.to_csv(f"resumen_{region_seleccionada.lower()}_chronos_manager.csv")
-    st.success(f"Resumen exportado como 'resumen_{region_seleccionada.lower()}_chronos_manager.csv'")
+st.plotly_chart(fig_productividad)
