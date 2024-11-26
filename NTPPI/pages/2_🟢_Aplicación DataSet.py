@@ -1,23 +1,31 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
+import numpy as np
+import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
-st.subheader("Análisis y Filtrado de Datos")
+st.markdown('''# Tasa de Criminalidad en E.U 2020 - 2022''')
 
 # Cargar archivo CSV subido por el usuario
 uploaded_file = st.file_uploader("Sube un archivo CSV", type=["csv"])
 
+# Función para leer el archivo en chunks y concatenarlos en un solo DataFrame
+def cargar_archivo_en_chunks(archivo, chunksize=100000):
+    chunks = pd.read_csv(archivo, chunksize=chunksize, encoding="latin-1")  # Especifica la codificación aquí
+    df = pd.concat(chunks, ignore_index=True)  # Combina todos los chunks en un DataFrame
+    return df
 
 # Si el usuario ha subido un archivo, usa ese. Si no, usa el archivo por defecto.
 if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
+    df = cargar_archivo_en_chunks(uploaded_file)
 else:
-    df = pd.read_csv('./static/datasets/ventas.csv')
+    df = cargar_archivo_en_chunks('./static/datasets/mortality.csv')
 
 # Tabs para diferentes análisis
-tab_descripcion, tab_analisis_exploratorio, tab_filtrado_basico, tab_filtro_final_dinamico = st.tabs(
-    ["Descripción", "Análisis Exploratorio", "Filtrado Básico", "Filtro Final Dinámico"]
+tab_descripcion, tab_analisis_exploratorio, tab_filtro_final_dinamico = st.tabs(
+    ["Descripción", "Análisis Exploratorio","Filtro Final Dinámico"]
 )
 
 #----------------------------------------------------------
@@ -25,112 +33,155 @@ tab_descripcion, tab_analisis_exploratorio, tab_filtrado_basico, tab_filtro_fina
 #----------------------------------------------------------
 with tab_descripcion:      
     st.markdown('''
-                
-    # Plantilla Básica Proyecto Integrador
     -------------------------------------------
 
     ## Introducción
     
-    #### ¿Qué es el proyecto?
+    #### Analizador de Criminalidad
     
-     Chronos Manager es una aplicación para gestionar horarios de trabajo, controlar horas extras, ausencias y generar reportes de asistencia. Permite registrar entradas y salidas de empleados, calcular horas trabajadas y gestionar permisos.
+    ¿Qué es el fenómeno de la criminalidad en EE. UU.?
+    La criminalidad en Estados Unidos se refiere a los delitos cometidos dentro del país y su impacto en la sociedad. Abarca una amplia gama de crímenes, desde delitos menores hasta crímenes violentos graves, como homicidios, asaltos y robos. Las tasas de criminalidad se calculan para evaluar la frecuencia y la distribución de los delitos en diferentes regiones, lo que ayuda a las autoridades y a la sociedad en general a entender mejor las dinámicas de la delincuencia y a implementar políticas públicas orientadas a reducirla.
     
     
-    #### ¿Cuál es el objetivo principal?
+    #### ¿Cuál es el objetivo del análisis?
     
-     El objetivo principal de Chronos Manager es facilitar el control y la gestión de horarios de trabajo, optimizando el seguimiento de asistencia, horas extras y ausencias en equipos laborales.
+    El objetivo principal del análisis de la criminalidad en Estados Unidos es proporcionar una comprensión detallada sobre las tendencias y patrones de los crímenes durante los años 2020-2022. Este análisis busca identificar los factores que contribuyen a los aumentos o disminuciones de los delitos, con énfasis en los crímenes violentos y las políticas de seguridad pública implementadas durante ese periodo.
 
 
     #### ¿Por qué es importante?
     
-    Chronos Manager es importante porque ayuda a las empresas a gestionar de manera eficiente los horarios de trabajo, mejorando la precisión en el registro de asistencia, horas extras y ausencias. Esto optimiza la administración del tiempo, reduce errores, y facilita la generación de reportes, lo que mejora la productividad y la toma de decisiones.
+    El análisis de la criminalidad en EE. UU. es crucial porque permite a las autoridades, los legisladores y la sociedad en general tomar decisiones informadas sobre cómo abordar la delincuencia. Estudiar la evolución de la criminalidad en los últimos años, especialmente durante la pandemia de COVID-19, permite identificar las áreas de mayor preocupación y aplicar medidas efectivas para mejorar la seguridad pública. Además, comprender las tendencias criminales ayuda a ajustar los recursos destinados a la prevención y a la intervención, mejorando la calidad de vida en las comunidades.
     
     
-     ## Desarrollo
+     ### Desarrollo
      
-    
-    Este proyecto titulado Gestor de Horarios, Control de Accesos y Analizador de Datos, 
-    tiene como objetivo proporcionar una solución integral para la gestión de asistencia y horarios de empleados, 
-    así como el control de accesos en una organización. La plataforma permite crear, modificar y gestionar los horarios del personal, registrar la entrada y salida a través de un 
-    sistema de control de accesos y, además, generar reportes analíticos basados en estos datos. Estas funcionalidades permiten optimizar la gestión de los recursos humanos, mejorar la eficiencia en la administración del tiempo y 
-    proporcionar información valiosa para la toma de decisiones estratégicas a través del análisis de los datos obtenidos.
+    Contexto de la Criminalidad en EE. UU. (2020-2022)
+    Durante los años 2020-2022, Estados Unidos enfrentó un aumento significativo en varios tipos de delitos, en gran parte impulsados por la pandemia de COVID-19, la crisis económica, y el aumento de tensiones sociales y políticas. La pandemia alteró la vida cotidiana, lo que afectó tanto a la economía como a la seguridad pública. Los confinamientos, las interrupciones en los servicios sociales y la falta de oportunidades laborales fueron factores que contribuyeron al aumento de ciertos tipos de criminalidad, incluidos los crímenes violentos y las agresiones domésticas.
     
     
-    ##  Procedimiento utilizado
+    ###  Procedimiento utilizado
      
-    El procedimiento utilizado para el desarrollo del proyecto Gestor de Horarios, Control de Accesos y Analizador de Datos fue el siguiente:
+    - Análisis de Datos de Criminalidad: Se recopilaron y analizaron estadísticas sobre crímenes violentos, delitos de odio y tiroteos masivos en EE. UU. entre 2020 y 2022, a partir de fuentes como el FBI y el Bureau of Justice Statistics.
 
-    Análisis de Requisitos: Se realizó un análisis detallado para identificar las necesidades del sistema, como la gestión de horarios, control de acceso, y 
-    el análisis de datos de asistencia. Se 
-    establecieron los módulos clave del sistema y las interacciones entre ellos.
+    - Identificación de Factores Sociales y Económicos: Se evaluaron los factores sociales y económicos que influyeron en el aumento de la criminalidad, como el desempleo, la pobreza, la desigualdad racial y el estrés derivado de la pandemia.
 
-    Diseño de la Arquitectura: Se definió una arquitectura basada en un frontend intuitivo y funcional, conectado a un backend robusto que administra los datos de usuarios y asistencias. El frontend fue desarrollado con tecnologías como React para la interfaz de usuario, mientras 
-    que el backend utilizó Node.js con una base de datos MySQL para almacenar y gestionar la información.
+    - Estudio de Políticas Públicas: Se revisaron las políticas públicas implementadas para controlar la criminalidad, como las reformas policiales y el fortalecimiento de las leyes sobre control de armas.
 
-    Desarrollo del Sistema: Se implementaron las funcionalidades clave:
+    - Análisis de Tendencias Criminales: Se analizaron las tendencias de criminalidad en las principales ciudades de EE. UU. y su relación con los cambios socio-políticos y las respuestas gubernamentales.
 
-    Gestor de Horarios: Permite crear y asignar horarios personalizados para cada empleado. Control de Accesos: Monitorea la entrada y salida de los empleados, registrando sus tiempos de trabajo.
-    Analizador de Datos: Genera reportes y visualizaciones analíticas a partir de los datos recopilados, permitiendo una mejor comprensión del desempeño y asistencia.
-    Pruebas y Depuración: Se realizaron pruebas exhaustivas para asegurar el correcto funcionamiento de todas las características, corrigiendo errores y ajustando el rendimiento del sistema.
-
-    Documentación y Despliegue: Se preparó la documentación técnica y el sistema fue desplegado, asegurando que los usuarios puedan interactuar fácilmente con el mismo.
+    - Generación de Reportes y Recomendaciones: Se elaboraron reportes basados en los datos analizados y se propusieron recomendaciones sobre cómo mejorar la seguridad pública y reducir la criminalidad en el futuro.
      
      
     ##  Resultados obtenidos
      
-    Los resultados obtenidos con el desarrollo del proyecto Gestor de Horarios, Control de Accesos y Analizador de Datos fueron muy positivos, logrando cumplir con los objetivos planteados. Entre los resultados destacan:
-
-    Automatización de la Gestión de Horarios: Se implementó un sistema eficiente para crear y gestionar horarios personalizados para los empleados, reduciendo significativamente el tiempo y esfuerzo manual necesario para esta tarea.
-
-    Control de Accesos en Tiempo Real: El sistema permite registrar la entrada y salida de los empleados de manera automática, proporcionando un control más preciso y fiable de la asistencia, mejorando la seguridad y la puntualidad.
-
-    Generación de Reportes Analíticos: El módulo de análisis de datos permitió generar reportes detallados sobre la asistencia de los empleados, identificando patrones, días de ausencias y horas extras. Estos reportes ayudan a los administradores a tomar decisiones informadas y estratégicas sobre la gestión del personal.
-
-    Interfaz de Usuario Intuitiva: Gracias al uso de tecnologías modernas como React para el frontend, el sistema ofrece una experiencia de usuario amigable e interactiva, facilitando la navegación y la gestión diaria.
-
-    Mejora en la Eficiencia Operativa: El proyecto ayudó a optimizar los procesos de recursos humanos, minimizando errores en el registro de asistencia y proporcionando una visión clara del rendimiento de los empleados, lo que impacta positivamente en la productividad organizacional.
-     
+     - Control de Armas y Tiroteos Masivos
+     - Reinserción Social y Programas de Prevención
+     - Impacto de la Pandemia en los Delitos
+     - Desigualdad Racial y Criminalidad
+     - Efectos del Uso de Tecnología en la Seguridad Pública
+     - Reforma en el Sistema de Justicia Penal
      
     ## Conclusión
 
-    -   Resumen de los resultados
-    -   Logros alcanzados
-    -   Dificultades encontradas
-    -   Aportes personales
+    - Resumen de los resultados:
+        El análisis de la criminalidad en EE. UU. entre 2020 y 2022 reveló un aumento en ciertos tipos de delitos, especialmente homicidios y robos, exacerbados por la pandemia, tensiones sociales y desigualdad racial. Las soluciones implementadas incluyeron mejoras en la seguridad pública, el uso de tecnología y reformas en el sistema de justicia penal.
+    
+    - Logros alcanzados:
+        Se lograron avances en la reducción de delitos en áreas específicas mediante el incremento de patrullas policiales y tecnologías de vigilancia. Además, se introdujeron reformas en la policía y políticas para reducir las disparidades raciales y mejorar la rehabilitación de los prisioneros.
+    - Dificultades encontradas:
+        Las dificultades incluyeron la resistencia a los cambios dentro de las fuerzas policiales, las preocupaciones por la privacidad con el uso de tecnologías de vigilancia y los desafíos para reducir la desigualdad racial y económica, que siguen siendo factores clave en la criminalidad.
+    - Aportes personales:
+        Contribuir a la reflexión sobre cómo las reformas pueden impactar positivamente en la reducción de delitos, sobre todo en comunidades marginadas, y cómo el uso responsable de la tecnología puede equilibrarse con la protección de derechos individuales.
     
     ''')
+
 
 #----------------------------------------------------------
 # Análisis Exploratorio
 #----------------------------------------------------------
 with tab_analisis_exploratorio:    
-    st.title("Análisis Exploratorio")
-    st.markdown("""
-    * Muestra las primeras 5 filas del DataFrame. **(df.head())**
-    * Muestra la cantidad de filas y columnas del DataFrame. **(df.shape)**
-    * Muestra los tipos de datos de cada columna. **(df.dtypes)**
-    * Identifica y muestra las columnas con valores nulos. **(df.isnull().sum())**
-    * Muestra un resumen estadístico de las columnas numéricas. **(df.describe())**
-    """)
+    st.markdown('''## Análisis''')
+
+    # Primeras 5 filas del DF
+    st.markdown('''#### Primeras 5 Crimenes''')
     st.dataframe(df.head())
 
-#----------------------------------------------------------
-# Filtrado Básico
-#----------------------------------------------------------
-with tab_filtrado_basico:
-    st.title("Filtro Básico")
-    column = st.selectbox("Selecciona la columna para filtrar", df.columns)
-    value = st.text_input(f"Introduce el valor para filtrar en {column}")
-    if value:
-        filtered_data = df[df[column] == value]
-        st.dataframe(filtered_data)
+    # Muestra la cantidad de filas y columnas del DataFrame
+    st.subheader("Cantidad de Filas y Columnas")
+    st.write(df.shape)
 
-#----------------------------------------------------------
-# Filtro Final Dinámico
-#----------------------------------------------------------
+    # Muestra los tipos de datos de cada columna
+    st.subheader("Tipos de Datos de Cada Columna")
+    st.write(df.dtypes)
+
+    # Identifica y muestra las columnas con valores nulos
+    st.subheader("Columnas con Valores Nulos")
+    st.write(df.isnull().sum())
+
+    # Muestra un resumen estadístico de las columnas numéricas
+    st.subheader("Resumen Estadístico de Columnas Numéricas")
+    st.write(df.describe())
+
+
+# ----------------------------------------------------------
+# Filtro Final Dinámico con Gráficas Mejoradas
+# ----------------------------------------------------------
 with tab_filtro_final_dinamico:
-    st.title("Filtro Final Dinámico")
+    st.markdown(''' ## Filtro Final Dinámico''')
     st.markdown("""
-    * Muestra un resumen dinámico del DataFrame filtrado.
+    * Muestra un resumen dinámico del DataFrame filtrado y gráficos analíticos.
     """)
-    st.dataframe(df)
+
+    # Filtro básico por columna y valor
+    column = st.selectbox("Selecciona la columna para filtrar", options=df.columns, key="selectbox2")
+    value = st.text_input(f"Introduce el valor para filtrar en {column}", key="text_input2")
+    
+    # Filtrar el DataFrame según la entrada
+    filtered_data = df[df[column] == value] if value else df 
+
+    # Rango adicional para limitar los datos (si la columna numérica existe)
+    numeric_column = st.selectbox(
+        "Selecciona una columna numérica para definir un rango", 
+        options=[col for col in filtered_data.columns if pd.api.types.is_numeric_dtype(filtered_data[col])],
+        key="numeric_column"
+    )
+    
+    if numeric_column:
+        min_val, max_val = st.slider(
+            f"Selecciona el rango de {numeric_column}", 
+            float(filtered_data[numeric_column].min()), 
+            float(filtered_data[numeric_column].max()), 
+            (float(filtered_data[numeric_column].min()), float(filtered_data[numeric_column].max())),
+            key="range_slider"
+        )
+        filtered_data = filtered_data[(filtered_data[numeric_column] >= min_val) & (filtered_data[numeric_column] <= max_val)]
+
+    # Mostrar tabla filtrada
+    st.subheader("Tabla de Datos")
+    st.dataframe(filtered_data.head(10))  # Mostrar solo las primeras 10 filas
+
+    # Verificar si hay datos en el filtro para mostrar gráficos
+    if not filtered_data.empty:
+        st.subheader("Gráficas Analíticas")
+
+        # Crear y mostrar 6 gráficas con diferentes combinaciones de ejes
+        graficas = [
+            {"x": filtered_data.columns[0], "y": filtered_data.columns[1], "title": "Gráfico 1: Comparativa"},
+            {"x": filtered_data.columns[0], "y": filtered_data.columns[2], "title": "Gráfico 2: Tendencias"},
+            {"x": filtered_data.columns[1], "y": filtered_data.columns[3], "title": "Gráfico 3: Relación 1 vs 3"},
+            {"x": filtered_data.columns[1], "y": filtered_data.columns[4], "title": "Gráfico 4: Relación 1 vs 4"},
+            {"x": filtered_data.columns[2], "y": filtered_data.columns[3], "title": "Gráfico 5: Relación 2 vs 3"},
+            {"x": filtered_data.columns[2], "y": filtered_data.columns[4], "title": "Gráfico 6: Relación 2 vs 4"}
+        ]
+
+        for grafica in graficas:
+            fig = px.bar(
+                filtered_data, 
+                x=grafica["x"], 
+                y=grafica["y"], 
+                title=grafica["title"], 
+                labels={"x": grafica["x"], "y": grafica["y"]}
+            )
+            st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.write("No se encontraron datos para los criterios de filtro seleccionados.")

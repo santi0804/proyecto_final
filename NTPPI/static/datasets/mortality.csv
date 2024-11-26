@@ -1,0 +1,10 @@
+import os
+import pandas as pd
+
+file_path = './static/datasets/mortality.csv'
+
+try:
+    data = pd.read_csv(file_path)
+    print("Archivo cargado con éxito.")
+except FileNotFoundError:
+    print(f"Error: No se encontró el archivo en la ruta especificada: {file_path}")
