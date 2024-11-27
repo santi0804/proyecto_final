@@ -7,25 +7,25 @@ import plotly.express as px
 genai.configure(api_key='AIzaSyA_y4aB3PUdc5SIUGtH5rnU73vVFlVchd0')
 modelo = genai.GenerativeModel("gemini-1.5-flash")
 
-# Definir datos de categorías de horarios
+# Definir datos de categorías de horarios con nuevas imágenes
 datos_horarios = {
     "trabajo": {
         "color": "#3498db",  # Azul
-        "imagen": "https://icons.iconarchive.com/icons/paomedia/small-n-flat/128/alarm-clock-icon.png",
+        "imagen": "https://firebasestorage.googleapis.com/v0/b/imagenes-e192b.appspot.com/o/python%202.jpg?alt=media&token=2cf8939c-8078-4de8-8d1f-77d0094964ea",
         "icono": "🕒",
         "descripcion": "Horas de trabajo programadas",
         "ejemplos": ["Entrada", "Salida", "Horas Extra"]
     },
     "ausencias": {
         "color": "#e74c3c",  # Rojo
-        "imagen": "https://icons.iconarchive.com/icons/paomedia/small-n-flat/128/cancel-icon.png",
+        "imagen": "https://firebasestorage.googleapis.com/v0/b/imagenes-e192b.appspot.com/o/python3.avif?alt=media&token=47cee2f6-eb00-4e9b-9a36-ce046d54bd50",
         "icono": "❌",
         "descripcion": "Registros de ausencias o permisos",
         "ejemplos": ["Permiso", "Vacaciones", "Licencia"]
     },
     "horas_extra": {
         "color": "#2ecc71",  # Verde
-        "imagen": "https://icons.iconarchive.com/icons/paomedia/small-n-flat/128/clock-icon.png",
+        "imagen": "https://firebasestorage.googleapis.com/v0/b/imagenes-e192b.appspot.com/o/python4.jpg?alt=media&token=578fbd9e-5a62-4e2a-8f08-de82d3b30bfd",
         "icono": "⏰",
         "descripcion": "Horas trabajadas fuera del horario regular",
         "ejemplos": ["Horas extra en la mañana", "Horas extra en la noche"]
@@ -52,16 +52,17 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS personalizado
+# CSS personalizado mejorado
 st.markdown("""
     <style>
     .categoria-card {
-        background: linear-gradient(135deg, #2ecc71, #3498db);
+        background: linear-gradient(135deg, #e0eafc, #cfdef3);
         box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.4);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
-        color: #fff;
+        color: #000;
         padding: 1.5rem;
         border-radius: 10px;
+        text-align: center;
     }
     .categoria-card:hover {
         transform: scale(1.1);
@@ -69,11 +70,19 @@ st.markdown("""
     }
     .resultado {
         padding: 1rem;
-        background-color: #34495e;
+        background-color: #2c3e50;
         color: white;
         text-align: center;
         border-radius: 10px;
         margin-top: 1rem;
+    }
+    .img-centro {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    body {
+        font-family: 'Arial', sans-serif;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -93,8 +102,15 @@ if st.button("Clasificar"):
         with st.spinner("Analizando..."):
             resultado = identificar_categoria_con_explicacion(horario)
             st.session_state.categoria_seleccionada = resultado
+            categoria = "Indefinido"
+            imagen = ""
+            for cat, datos in datos_horarios.items():
+                if cat in resultado.lower():
+                    categoria = cat
+                    imagen = datos['imagen']
             st.markdown(f"""
                 <div class='resultado'>
+                    <img src="{imagen}" class='img-centro' width="500">
                     <h3>Resultado:</h3>
                     <p>{resultado}</p>
                 </div>
@@ -109,6 +125,7 @@ for i, (categoria, datos) in enumerate(datos_horarios.items()):
     with cols[i]:
         st.markdown(f"""
             <div class='categoria-card' style="border-left: 5px solid {datos['color']}">
+                <img src="{datos['imagen']}" width="100%">
                 <div><b>{datos['icono']} {categoria.title()}</b></div>
                 <p>{datos['descripcion']}</p>
                 <p><i>Ejemplos: {', '.join(datos['ejemplos'])}</i></p>
